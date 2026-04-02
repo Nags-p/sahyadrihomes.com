@@ -253,6 +253,10 @@ function initFAQ() {
 // --- 7. SWIPER SLIDER ---
 function initSwiper() {
     if (document.querySelector('.testimonial-swiper') && typeof Swiper !== 'undefined') {
+        if (window.innerWidth <= 768) {
+            return;
+        }
+
         new Swiper('.testimonial-swiper', {
             loop: true,
             spaceBetween: 20,
