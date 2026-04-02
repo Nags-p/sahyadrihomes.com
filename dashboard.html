@@ -71,47 +71,67 @@
 
 <!-- === ADD THIS NEW PAGE === -->
 <div id="page-dashboard" class="page">
-    <h2>Dashboard Overview</h2>
+    <div class="admin-shell admin-shell-overview">
+        <div class="admin-shell-header">
+            <div class="admin-shell-title">
+                <span class="admin-shell-eyebrow">Control Center</span>
+                <h2>Dashboard Overview</h2>
+                <p>Track fresh activity, jump into content work, and keep the day moving from one consistent workspace.</p>
+            </div>
+        </div>
 
-    <!-- Stat Cards -->
-    <div class="stats-summary">
-        <div class="stat-card">
-            <h3>New Inquiries</h3>
-            <p id="stat-new-inquiries">-</p>
+        <div class="admin-metrics-grid admin-metrics-grid-3">
+            <div class="admin-metric-card">
+                <span>New Inquiries</span>
+                <strong id="stat-new-inquiries">-</strong>
+            </div>
+            <div class="admin-metric-card">
+                <span>New Applications</span>
+                <strong id="stat-new-apps">-</strong>
+            </div>
+            <div class="admin-metric-card">
+                <span>Total Site Visits</span>
+                <strong id="stat-total-visits">-</strong>
+            </div>
         </div>
-        <div class="stat-card">
-            <h3>New Applications</h3>
-            <p id="stat-new-apps">-</p>
-        </div>
-        <div class="stat-card">
-            <h3>Total Site Visits</h3>
-            <p id="stat-total-visits">-</p>
-        </div>
-    </div>
 
-    <!-- Quick Actions -->
-    <div class="content-box">
-        <h4>Quick Actions</h4>
-        <div class="quick-actions-grid">
-            <a href="#projects" class="quick-action-btn"><i class="fas fa-plus"></i> Add New Project</a>
-            <a href="#blog" class="quick-action-btn"><i class="fas fa-plus"></i> New Blog Article</a>
-            <a href="#promotions" class="quick-action-btn"><i class="fas fa-bullhorn"></i> Compose Promotion</a>
+        <div class="admin-panel">
+            <div class="admin-panel-heading">
+                <div>
+                    <h3>Quick Actions</h3>
+                    <p>Open the workspaces your team uses most often.</p>
+                </div>
+            </div>
+            <div class="quick-actions-grid">
+                <a href="#projects" class="quick-action-btn"><i class="fas fa-plus"></i> Add New Project</a>
+                <a href="#blog" class="quick-action-btn"><i class="fas fa-plus"></i> New Blog Article</a>
+                <a href="#promotions" class="quick-action-btn"><i class="fas fa-bullhorn"></i> Compose Promotion</a>
+            </div>
         </div>
-    </div>
 
-    <!-- Recent Activity -->
-    <div class="stats-container">
-        <div class="stats-column">
-            <h4>Recent Inquiries</h4>
-            <ul id="recent-inquiries-list" class="stats-list">
-                <li>Loading...</li>
-            </ul>
-        </div>
-        <div class="stats-column">
-            <h4>Recent Applications</h4>
-            <ul id="recent-apps-list" class="stats-list">
-                <li>Loading...</li>
-            </ul>
+        <div class="admin-panel-grid admin-panel-grid-2">
+            <div class="admin-panel">
+                <div class="admin-panel-heading">
+                    <div>
+                        <h3>Recent Inquiries</h3>
+                        <p>The latest leads from your website contact flow.</p>
+                    </div>
+                </div>
+                <ul id="recent-inquiries-list" class="stats-list">
+                    <li>Loading...</li>
+                </ul>
+            </div>
+            <div class="admin-panel">
+                <div class="admin-panel-heading">
+                    <div>
+                        <h3>Recent Applications</h3>
+                        <p>Newest candidate submissions waiting for review.</p>
+                    </div>
+                </div>
+                <ul id="recent-apps-list" class="stats-list">
+                    <li>Loading...</li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
@@ -123,37 +143,84 @@
 
 <div id="page-notes" class="page">
     <div class="content-box">
-        <div class="analytics-header">
-            <h2>Notes Manager</h2>
-            <button id="btn-new-note" class="btn-primary"><i class="fas fa-plus"></i> New Note</button>
-        </div>
-        
-        <div class="blog-layout"> <!-- We can reuse the blog layout style -->
-            
-            <!-- LEFT: NOTES LIST -->
-            <div class="blog-list-panel">
-                <ul id="notes-list" class="notes-list-ul">
-                    <li>Loading notes...</li>
-                </ul>
+        <div class="notes-shell">
+            <div class="notes-shell-header">
+                <div class="notes-shell-title">
+                    <span class="notes-shell-eyebrow">Internal Workspace</span>
+                    <h2>Notes Manager</h2>
+                    <p>Capture reminders, site observations, and team follow-ups in one place.</p>
+                </div>
+                <button id="btn-new-note" class="btn-primary"><i class="fas fa-plus"></i> New Note</button>
             </div>
 
-            <!-- RIGHT: NOTE EDITOR -->
-            <div class="blog-editor-panel">
-                <form id="note-form">
-                    <input type="hidden" id="note-id">
-
-                    <label for="note-title-input">Title</label>
-                    <input type="text" id="note-title-input" placeholder="Enter a title for your note" required>
-
-                    <label for="note-content-input">Content</label>
-                    <textarea id="note-content-input" rows="15" placeholder="Type your notes here..."></textarea>
-                    
-                    <div class="button-group" style="margin-top: 15px;">
-                        <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Note</button>
-                        <button type="button" id="btn-delete-note" class="btn-danger" style="display: none;"><i class="fas fa-trash-alt"></i> Delete</button>
+            <div class="notes-layout">
+                <aside class="notes-sidebar">
+                    <div class="notes-stats">
+                        <div class="notes-stat-card">
+                            <span>Total Notes</span>
+                            <strong id="notes-total-count">0</strong>
+                        </div>
+                        <div class="notes-stat-card">
+                            <span>Selected</span>
+                            <strong id="notes-active-label">New note</strong>
+                        </div>
                     </div>
-                    <div id="notes-status" class="status-message"></div>
-                </form>
+
+                    <div class="notes-search-wrap">
+                        <label for="notes-search-input">Search Notes</label>
+                        <input type="text" id="notes-search-input" placeholder="Search by title or content">
+                    </div>
+
+                    <div id="notes-list" class="notes-list">
+                        <div class="blog-list-empty">Loading notes...</div>
+                    </div>
+                </aside>
+
+                <section class="notes-editor-panel">
+                    <form id="note-form" class="notes-form">
+                        <input type="hidden" id="note-id">
+
+                        <div class="notes-form-grid">
+                            <div class="notes-field">
+                                <label for="note-title-input">Title</label>
+                                <input type="text" id="note-title-input" placeholder="Enter a title for your note" required>
+                            </div>
+                        </div>
+
+                        <div class="notes-editor-meta">
+                            <div class="notes-stat-card">
+                                <span>Word Count</span>
+                                <strong id="notes-word-count">0</strong>
+                            </div>
+                            <div class="notes-stat-card">
+                                <span>Preview</span>
+                                <strong>Live</strong>
+                            </div>
+                        </div>
+
+                        <div class="notes-editor-main">
+                            <div class="notes-writing-panel">
+                                <label for="note-content-input">Content</label>
+                                <textarea id="note-content-input" rows="16" placeholder="Type your notes here..."></textarea>
+                            </div>
+
+                            <div class="notes-preview-panel">
+                                <div class="notes-preview-card">
+                                    <h3 id="notes-preview-title">Your note title will appear here</h3>
+                                    <div id="notes-preview-body" class="notes-preview-body">
+                                        <p>Start typing to preview your note in a cleaner reading layout.</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="button-group" style="margin-top: 15px;">
+                            <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Note</button>
+                            <button type="button" id="btn-delete-note" class="btn-danger" style="display: none;"><i class="fas fa-trash-alt"></i> Delete</button>
+                        </div>
+                        <div id="notes-status" class="status-message"></div>
+                    </form>
+                </section>
             </div>
         </div>
     </div>
@@ -169,27 +236,41 @@
 
 <div id="page-inquiries" class="page">
     <div class="content-box">
-        <h2>Website Inquiries</h2>
-        <p>Manage new leads and view archived inquiries from your website contact forms.</p>
-
-        <!-- Horizontal Tab Navigation -->
-        <div class="tab-nav-horizontal">
-            <button class="tab-btn active" data-status="New">
-                <i class="fas fa-inbox"></i> New Inquiries <span id="new-inquiry-count" class="tab-badge"></span>
-            </button>
-            <button class="tab-btn" data-status="Archived">
-                <i class="fas fa-archive"></i> Archived
-            </button>
-        </div>
-
-        <!-- Tab Content Area -->
-        <div class="tab-content-horizontal">
-            <div id="inquiries-container">
-                <!-- Inquiry cards will be loaded here by JS -->
+        <div class="admin-shell admin-shell-inquiries">
+            <div class="admin-shell-header">
+                <div class="admin-shell-title">
+                    <span class="admin-shell-eyebrow">Lead Desk</span>
+                    <h2>Website Inquiries</h2>
+                    <p>Review new leads quickly, keep archived conversations accessible, and manage outreach from one cleaner view.</p>
+                </div>
             </div>
+
+            <div class="admin-panel">
+                <div class="admin-panel-heading">
+                    <div>
+                        <h3>Inquiry Pipeline</h3>
+                        <p>Switch between active and archived messages without leaving the page.</p>
+                    </div>
+                </div>
+
+                <div class="tab-nav-horizontal admin-tab-nav">
+                    <button class="tab-btn active" data-status="New">
+                        <i class="fas fa-inbox"></i> New Inquiries <span id="new-inquiry-count" class="tab-badge"></span>
+                    </button>
+                    <button class="tab-btn" data-status="Archived">
+                        <i class="fas fa-archive"></i> Archived
+                    </button>
+                </div>
+
+                <div class="tab-content-horizontal admin-tab-content">
+                    <div id="inquiries-container">
+                        <!-- Inquiry cards will be loaded here by JS -->
+                    </div>
+                </div>
+            </div>
+
+            <div id="inquiries-status" class="status-message"></div>
         </div>
-        
-        <div id="inquiries-status" class="status-message"></div>
     </div>
 </div>
 
@@ -197,66 +278,74 @@
 
 <div id="page-promotions" class="page">
     <div class="content-box">
-        <h2>Promotional Campaigns</h2>
-        <p>Compose new email promotions, manage your image assets, and view the history of past campaigns.</p>
-
-        <!-- Horizontal Tab Navigation -->
-        <div class="tab-nav-horizontal">
-            <button class="tab-btn active" data-tab="compose">
-                <i class="fas fa-pencil-alt"></i> Compose
-            </button>
-            <button class="tab-btn" data-tab="images">
-                <i class="fas fa-images"></i> Image Manager
-            </button>
-            <button class="tab-btn" data-tab="history">
-                <i class="fas fa-history"></i> Campaign History
-            </button>
-        </div>
-
-        <!-- Tab Content Area -->
-        <div class="tab-content-horizontal">
-            <!-- 1. Compose Tab Pane -->
-            <div id="tab-pane-compose" class="tab-pane active">
-                <!-- Paste the content from the OLD #page-promotions here -->
-                <form id="campaign-form">
-                    <label for="c-subject"><i class="fas fa-pencil-alt"></i> Email Subject</label><input type="text" id="c-subject" required>
-                    <label for="c-headline"><i class="fas fa-heading"></i> Headline</label><input type="text" id="c-headline" required>
-                    <label for="c-image-list"><i class="fas fa-image"></i> Main Image</label><select id="c-image-list" required><option value="" disabled selected>Loading...</option></select>
-                    <label for="c-body"><i class="fas fa-align-left"></i> Body Text</label><textarea id="c-body" required></textarea>
-                    <label for="c-cta-text"><i class="fas fa-mouse-pointer"></i> Button Text</label><input type="text" id="c-cta-text" value="Learn More" required>
-                    <label for="c-cta-path"><i class="fas fa-link"></i> Button Link</label><div class="link-input-group"><span class="link-prefix">https://nags-p.github.io/sahyadriconsanddev.web/</span><input type="text" id="c-cta-path" required></div>
-                    <h4 style="margin-top: 30px;">Select Segments</h4>
-                    <div id="segment-container"></div>
-                    <div class="button-group">
-                        <button type="button" id="btn-preview" class="btn-info"><i class="fas fa-eye"></i> Preview</button>
-                        <button type="button" id="btn-send-test" class="btn-secondary"><i class="fas fa-paper-plane"></i> Send Test</button>
-                        <button type="submit" id="btn-send-campaign" class="btn-primary"><i class="fas fa-rocket"></i> Send Campaign</button>
-                    </div>
-                    <div class="loader" id="campaign-loader"></div>
-                    <div id="campaign-status" class="status-message"></div>
-                </form>
-            </div>
-
-            <!-- 2. Image Manager Tab Pane -->
-            <div id="tab-pane-images" class="tab-pane">
-                <!-- Paste the content from the OLD #page-image-manager here -->
-                <div class="image-manager-actions">
-                    <label for="image-upload-input" class="btn-primary"><i class="fas fa-cloud-upload-alt"></i> Upload New Image</label>
-                    <input type="file" id="image-upload-input" accept="image/jpeg, image/png, image/gif" style="display: none;">
-                    <div id="image-upload-preview" class="image-upload-preview"><span>No Image Selected</span></div>
+        <div class="admin-shell admin-shell-promotions">
+            <div class="admin-shell-header">
+                <div class="admin-shell-title">
+                    <span class="admin-shell-eyebrow">Campaign Studio</span>
+                    <h2>Promotional Campaigns</h2>
+                    <p>Compose campaigns, manage promotional imagery, and review previous sends in a layout that matches the rest of the admin.</p>
                 </div>
-                <div id="image-manager-status" class="status-message"></div>
-                <div id="image-grid-container" class="image-grid"></div>
             </div>
 
-            <!-- 3. History Tab Pane -->
-            <div id="tab-pane-history" class="tab-pane">
-                <!-- Paste the content from the OLD #page-archive here -->
-                <div style="overflow-x: auto;">
-                    <table id="archive-table">
-                        <thead></thead>
-                        <tbody></tbody>
-                    </table>
+            <div class="admin-panel">
+                <div class="admin-panel-heading">
+                    <div>
+                        <h3>Campaign Workspace</h3>
+                        <p>Move between compose, image management, and send history without changing sections.</p>
+                    </div>
+                </div>
+
+                <div class="tab-nav-horizontal admin-tab-nav">
+                    <button class="tab-btn active" data-tab="compose">
+                        <i class="fas fa-pencil-alt"></i> Compose
+                    </button>
+                    <button class="tab-btn" data-tab="images">
+                        <i class="fas fa-images"></i> Image Manager
+                    </button>
+                    <button class="tab-btn" data-tab="history">
+                        <i class="fas fa-history"></i> Campaign History
+                    </button>
+                </div>
+
+                <div class="tab-content-horizontal admin-tab-content">
+                    <div id="tab-pane-compose" class="tab-pane active">
+                        <form id="campaign-form">
+                            <label for="c-subject"><i class="fas fa-pencil-alt"></i> Email Subject</label><input type="text" id="c-subject" required>
+                            <label for="c-headline"><i class="fas fa-heading"></i> Headline</label><input type="text" id="c-headline" required>
+                            <label for="c-image-list"><i class="fas fa-image"></i> Main Image</label><select id="c-image-list" required><option value="" disabled selected>Loading...</option></select>
+                            <label for="c-body"><i class="fas fa-align-left"></i> Body Text</label><textarea id="c-body" required></textarea>
+                            <label for="c-cta-text"><i class="fas fa-mouse-pointer"></i> Button Text</label><input type="text" id="c-cta-text" value="Learn More" required>
+                            <label for="c-cta-path"><i class="fas fa-link"></i> Button Link</label><div class="link-input-group"><span class="link-prefix">https://nags-p.github.io/sahyadriconsanddev.web/</span><input type="text" id="c-cta-path" required></div>
+                            <h4 style="margin-top: 30px;">Select Segments</h4>
+                            <div id="segment-container"></div>
+                            <div class="button-group">
+                                <button type="button" id="btn-preview" class="btn-info"><i class="fas fa-eye"></i> Preview</button>
+                                <button type="button" id="btn-send-test" class="btn-secondary"><i class="fas fa-paper-plane"></i> Send Test</button>
+                                <button type="submit" id="btn-send-campaign" class="btn-primary"><i class="fas fa-rocket"></i> Send Campaign</button>
+                            </div>
+                            <div class="loader" id="campaign-loader"></div>
+                            <div id="campaign-status" class="status-message"></div>
+                        </form>
+                    </div>
+
+                    <div id="tab-pane-images" class="tab-pane">
+                        <div class="image-manager-actions">
+                            <label for="image-upload-input" class="btn-primary"><i class="fas fa-cloud-upload-alt"></i> Upload New Image</label>
+                            <input type="file" id="image-upload-input" accept="image/jpeg, image/png, image/gif" style="display: none;">
+                            <div id="image-upload-preview" class="image-upload-preview"><span>No Image Selected</span></div>
+                        </div>
+                        <div id="image-manager-status" class="status-message"></div>
+                        <div id="image-grid-container" class="image-grid"></div>
+                    </div>
+
+                    <div id="tab-pane-history" class="tab-pane">
+                        <div class="admin-table-wrap">
+                            <table id="archive-table">
+                                <thead></thead>
+                                <tbody></tbody>
+                            </table>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -266,15 +355,31 @@
 <!-- Replace your entire #page-clients div with this: -->
 <div id="page-clients" class="page">
     <div class="content-box">
-        <h2>Client Management</h2>
-        <input type="text" id="client-search" placeholder="Search by name, email, city or segment..." class="mb-20">
-        <div style="overflow-x: auto;">
-            <table id="client-table">
-                <thead></thead>
-                <tbody></tbody>
-            </table>
+        <div class="admin-shell admin-shell-clients">
+            <div class="admin-shell-header">
+                <div class="admin-shell-title">
+                    <span class="admin-shell-eyebrow">Relationship Hub</span>
+                    <h2>Client Management</h2>
+                    <p>Search your client list faster and review records in the same polished workspace style as Notes and Blog.</p>
+                </div>
+            </div>
+            <div class="admin-panel">
+                <div class="admin-panel-heading">
+                    <div>
+                        <h3>Client Directory</h3>
+                        <p>Filter by name, email, city, or segment to find the right contact quickly.</p>
+                    </div>
+                </div>
+                <input type="text" id="client-search" placeholder="Search by name, email, city or segment..." class="mb-20 admin-search-input">
+                <div class="admin-table-wrap">
+                    <table id="client-table">
+                        <thead></thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="client-status" class="status-message"></div>
         </div>
-        <div id="client-status" class="status-message"></div>
     </div>
 </div>
 
@@ -283,63 +388,132 @@
             <!-- BLOG / INSIGHTS PAGE -->
             <div id="page-blog" class="page">
                 <div class="content-box">
-                    <div class="analytics-header" style="justify-content: space-between;">
-                        <div>
-                            <h2>Blog / Insights</h2>
-                            <p>Manage articles that appear in the Insights section on your website.</p>
-                        </div>
-                        <button id="blog-new-btn" class="btn-primary"><i class="fas fa-plus"></i> New Article</button>
-                    </div>
-
-                    <div class="blog-layout">
-                        <!-- LEFT: LIST -->
-                        <div class="blog-list-panel">
-                            <table id="blog-table">
-                                <thead>
-                                    <tr>
-                                        <th>Title</th>
-                                        <th>Slug</th>
-                                        <th>Tag</th>
-                                        <th>Updated</th>
-                                        <th></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="blog-table-body">
-                                    <tr><td colspan="5" style="text-align:center;">Loading...</td></tr>
-                                </tbody>
-                            </table>
+                    <div class="blog-shell">
+                        <div class="blog-shell-header">
+                            <div class="blog-shell-title">
+                                <span class="blog-shell-eyebrow">Publishing Console</span>
+                                <h2>Blog / Insights</h2>
+                                <p>Draft, enrich, preview, and publish article content from one workspace.</p>
+                            </div>
+                            <button id="blog-new-btn" class="btn-primary"><i class="fas fa-plus"></i> New Article</button>
                         </div>
 
-                        <!-- RIGHT: EDITOR -->
-                        <div class="blog-editor-panel">
-                            <form id="blog-form">
-                                <input type="hidden" id="blog-id">
-
-                                <label for="blog-title-input">Title</label>
-                                <input type="text" id="blog-title-input" required placeholder="Article title">
-
-                                <label for="blog-slug-input">Slug (URL key)</label>
-                                <input type="text" id="blog-slug-input" required placeholder="e.g. soil-testing">
-                                <small>Final URL will look like: <code>blog.html?slug=your-slug</code></small>
-
-                                <label for="blog-tag-input">Tag / Category</label>
-                                <input type="text" id="blog-tag-input" placeholder="e.g. Structural Design">
-
-                                <label for="blog-author-input">Author</label>
-                                <input type="text" id="blog-author-input" placeholder="e.g. Sahyadri Engineering Team">
-
-                                <label for="blog-region-input">Region / Context</label>
-                                <input type="text" id="blog-region-input" placeholder="e.g. Mandya & Mysuru">
-
-                                <label for="blog-body-input">Body (HTML allowed)</label>
-                                <textarea id="blog-body-input" rows="12" placeholder="Paste or write your article content in HTML"></textarea>
-
-                                <div class="button-group" style="margin-top:15px;">
-                                    <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Article</button>
-                                    <button type="button" id="blog-delete-btn" class="btn-danger"><i class="fas fa-trash-alt"></i> Delete</button>
+                        <div class="blog-layout">
+                            <aside class="blog-library-panel">
+                                <div class="blog-library-summary">
+                                    <div class="blog-library-stat">
+                                        <span>Total Articles</span>
+                                        <strong id="blog-total-count">0</strong>
+                                    </div>
+                                    <div class="blog-library-stat">
+                                        <span>Active Slug</span>
+                                        <strong id="blog-current-slug">new-article</strong>
+                                    </div>
                                 </div>
-                                <div id="blog-status" class="status-message"></div>
-                            </form>
+
+                                <div class="blog-library-header">
+                                    <h3>Article Library</h3>
+                                    <p>Select an existing post to edit or review.</p>
+                                </div>
+
+                                <div id="blog-list-container" class="blog-list-container">
+                                    <div class="blog-list-empty">Loading articles...</div>
+                                </div>
+                            </aside>
+
+                            <section class="blog-editor-panel">
+                                <form id="blog-form" class="blog-form">
+                                    <input type="hidden" id="blog-id">
+
+                                    <div class="blog-form-grid">
+                                        <div class="blog-field blog-field-full">
+                                            <label for="blog-title-input">Title</label>
+                                            <input type="text" id="blog-title-input" required placeholder="Article title">
+                                        </div>
+
+                                        <div class="blog-field">
+                                            <label for="blog-slug-input">Slug (URL key)</label>
+                                            <input type="text" id="blog-slug-input" required placeholder="e.g. soil-testing">
+                                            <small>Final URL: <code>blog.html?slug=your-slug</code></small>
+                                        </div>
+
+                                        <div class="blog-field">
+                                            <label for="blog-tag-input">Tag / Category</label>
+                                            <input type="text" id="blog-tag-input" placeholder="e.g. Structural Design">
+                                        </div>
+
+                                        <div class="blog-field">
+                                            <label for="blog-author-input">Author</label>
+                                            <input type="text" id="blog-author-input" placeholder="e.g. Sahyadri Engineering Team">
+                                        </div>
+
+                                        <div class="blog-field">
+                                            <label for="blog-region-input">Region / Context</label>
+                                            <input type="text" id="blog-region-input" placeholder="e.g. Mandya & Mysuru">
+                                        </div>
+                                    </div>
+
+                                    <div class="blog-editor-main">
+                                        <div class="blog-writing-panel">
+                                            <div class="blog-editor-meta">
+                                                <div class="blog-editor-metric">
+                                                    <span>Word Count</span>
+                                                    <strong id="blog-word-count">0</strong>
+                                                </div>
+                                                <div class="blog-editor-metric">
+                                                    <span>Preview Mode</span>
+                                                    <strong>Live</strong>
+                                                </div>
+                                            </div>
+
+                                            <label for="blog-body-input">Body (HTML allowed)</label>
+                                            <div class="blog-editor-toolbar">
+                                                <button type="button" id="blog-insert-image-btn" class="btn-secondary"><i class="fas fa-image"></i> Upload Image</button>
+                                                <button type="button" id="blog-insert-image-url-btn" class="btn-secondary"><i class="fas fa-link"></i> Image URL</button>
+                                                <button type="button" id="blog-insert-video-btn" class="btn-secondary"><i class="fas fa-video"></i> Video Embed</button>
+                                                <button type="button" id="blog-insert-document-btn" class="btn-secondary"><i class="fas fa-file-arrow-up"></i> Upload Document</button>
+                                            </div>
+                                            <input type="file" id="blog-image-upload-input" accept="image/jpeg, image/png, image/webp, image/gif" style="display: none;">
+                                            <input type="file" id="blog-document-upload-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip" style="display: none;">
+                                            <small>Use the media tools to insert hosted images, documents, or YouTube/Vimeo videos into the article body.</small>
+                                            <textarea id="blog-body-input" rows="16" placeholder="Paste or write your article content in HTML"></textarea>
+                                        </div>
+
+                                        <div class="blog-preview-panel">
+                                            <div class="blog-preview-card">
+                                                <span id="blog-preview-tag" class="blog-preview-tag">Insight</span>
+                                                <h3 id="blog-preview-title">Your article title will appear here</h3>
+                                                <p id="blog-preview-meta" class="blog-preview-meta">Author name · Region · Ready for review</p>
+                                                <div id="blog-preview-body" class="blog-preview-body">
+                                                    <p>Start writing in the editor to see a live preview of your article layout.</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="blog-assets-panel">
+                                        <div class="blog-assets-header">
+                                            <div>
+                                                <h3>Blog Media Library</h3>
+                                                <p>Rename, delete, copy, or insert uploaded blog images and documents.</p>
+                                            </div>
+                                            <div class="blog-assets-stats">
+                                                <span id="blog-image-count">0 images</span>
+                                                <span id="blog-document-count">0 documents</span>
+                                            </div>
+                                        </div>
+                                        <div id="blog-assets-grid" class="blog-assets-grid">
+                                            <div class="blog-list-empty">No blog media uploaded yet.</div>
+                                        </div>
+                                    </div>
+
+                                    <div class="button-group" style="margin-top:15px;">
+                                        <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Article</button>
+                                        <button type="button" id="blog-delete-btn" class="btn-danger"><i class="fas fa-trash-alt"></i> Delete</button>
+                                    </div>
+                                    <div id="blog-status" class="status-message"></div>
+                                </form>
+                            </section>
                         </div>
                     </div>
                 </div>
@@ -350,87 +524,113 @@
 <!-- PROJECTS PAGE -->
 <div id="page-projects" class="page">
     <div class="content-box">
-        <div class="analytics-header">
-            <h2>Manage Projects</h2>
-            <button id="btn-new-project" class="btn-primary"><i class="fas fa-plus"></i> New Project</button>
+        <div class="admin-shell admin-shell-projects">
+            <div class="admin-shell-header">
+                <div class="admin-shell-title">
+                    <span class="admin-shell-eyebrow">Portfolio Studio</span>
+                    <h2>Manage Projects</h2>
+                    <p>Add, update, and curate public project showcases in the same card-based admin language used across the dashboard.</p>
+                </div>
+                <button id="btn-new-project" class="btn-primary"><i class="fas fa-plus"></i> New Project</button>
+            </div>
+            <div class="admin-panel">
+                <div class="admin-panel-heading">
+                    <div>
+                        <h3>Project Library</h3>
+                        <p>Review all live project cards and open any item for editing.</p>
+                    </div>
+                </div>
+                <div id="projects-list-container" class="image-grid">
+                    <!-- Admin project cards will be loaded here by JS -->
+                </div>
+            </div>
+            <div id="projects-status" class="status-message"></div>
         </div>
-        <p>Add, edit, or delete projects that appear on your public website.</p>
-        <div id="projects-list-container" class="image-grid">
-            <!-- Admin project cards will be loaded here by JS -->
-        </div>
-        <div id="projects-status" class="status-message"></div>
     </div>
 </div>
 
             <!-- ANALYTICS PAGE -->
             <div id="page-analytics" class="page">
                 <div class="content-box">
-                    <h2>Website Traffic</h2>
-
-                    <!-- 1. GLOBAL STATS & TRAFFIC LOG -->
-                    <div class="stats-summary" style="margin-bottom: 20px;">
-                        <div class="stat-card" style="background: #e0f2fe; border: 1px solid #bae6fd;">
-                            <h3 style="color: #0284c7;">Total Site Visits</h3>
-                            <!-- Inside #page-analytics -->
-                            <p id="analytics-total-visits" style="color: #0369a1;">Loading...</p>
-                        </div>
-                    </div>
-
-                    <!-- TOGGLE BUTTON -->
-                    <div style="margin-bottom: 20px;">
-                        <button type="button" onclick="toggleTrafficLog()" class="btn-secondary" style="width: auto; display: inline-flex; align-items: center; gap: 8px;">
-                            <span id="traffic-btn-icon">&#9656;</span> <!-- Right arrow icon -->
-                            View Recent Visitor Log
-                        </button>
-                    </div>
-
-                    <!-- HIDDEN TABLE CONTAINER -->
-                    <div id="traffic-log-container" style="display: none; margin-bottom: 40px; animation: fadeIn 0.3s ease;">
-                        <h3 style="font-size: 1.2rem; margin-bottom: 15px;">Recent Visitors (Last 50)</h3>
-                        <div style="overflow-x: auto; max-height: 300px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
-                            <table id="traffic-table" style="width: 100%; border-collapse: collapse; font-size: 0.9rem;">
-                                <thead style="background: #f9f9f9; position: sticky; top: 0;">
-                                    <tr>
-                                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Time</th>
-                                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">IP Address</th>
-                                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Page</th>
-                                        <th style="padding: 10px; text-align: left; border-bottom: 1px solid #ddd;">Source</th>
-                                    </tr>
-                                </thead>
-                                <tbody style="background: white;">
-                                    <tr><td colspan="4" style="padding:20px; text-align:center;">Loading data...</td></tr>
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-
-                    <hr style="margin: 30px 0; border: 0; border-top: 1px solid #eee;">
-
-                    <!-- 2. CAMPAIGN SECTION -->
-                    <h2>Email Campaign Analytics</h2>
-
-                    <div style="margin-bottom: 30px; background: #f9f9f9; padding: 20px; border-radius: 8px; border: 1px solid #eee;">
-                        <label for="analytics-campaign-select">Select Campaign to View:</label>
-                        <select id="analytics-campaign-select">
-                            <option value="" selected disabled>Select a campaign...</option>
-                        </select>
-                    </div>
-
-                    <!-- Campaign Stats (Hidden until selected) -->
-                    <div id="analytics-dashboard-content" style="display: none;">
-                        <div class="stats-summary">
-                            <div class="stat-card"><h3>Sent</h3><p id="stat-sent">-</p></div>
-                            <div class="stat-card"><h3>Opens</h3><p id="stat-opens">-</p></div>
-                            <div class="stat-card"><h3>Clicks</h3><p id="stat-clicks">-</p></div>
-                        </div>
-                        <div class="stats-container">
-                            <div class="stats-column">
-                                <h4>Opened By <i class="fas fa-eye"></i></h4>
-                                <ul id="analytics-opens-list" class="stats-list"></ul>
+                    <div class="admin-shell admin-shell-analytics">
+                        <div class="admin-shell-header">
+                            <div class="admin-shell-title">
+                                <span class="admin-shell-eyebrow">Insight Board</span>
+                                <h2>Website Traffic</h2>
+                                <p>Keep site traffic and campaign performance in one analytics workspace with clearer panels and easier scanning.</p>
                             </div>
-                            <div class="stats-column">
-                                <h4>Clicked By <i class="fas fa-hand-pointer"></i></h4>
-                                <ul id="analytics-clicks-list" class="stats-list"></ul>
+                        </div>
+
+                        <div class="admin-metrics-grid admin-metrics-grid-1">
+                            <div class="admin-metric-card admin-metric-card-accent">
+                                <span>Total Site Visits</span>
+                                <strong id="analytics-total-visits">Loading...</strong>
+                            </div>
+                        </div>
+
+                        <div class="admin-panel">
+                            <div class="admin-panel-heading">
+                                <div>
+                                    <h3>Visitor Activity</h3>
+                                    <p>Review recent traffic when you need more context than the top-line total.</p>
+                                </div>
+                                <button type="button" onclick="toggleTrafficLog()" class="btn-secondary admin-inline-btn">
+                                    <span id="traffic-btn-icon">&#9656;</span>
+                                    View Recent Visitor Log
+                                </button>
+                            </div>
+
+                            <div id="traffic-log-container" class="admin-traffic-log" style="display: none; animation: fadeIn 0.3s ease;">
+                                <h3 class="admin-subheading">Recent Visitors (Last 50)</h3>
+                                <div class="admin-table-wrap admin-table-wrap-scroll">
+                                    <table id="traffic-table" class="admin-simple-table">
+                                        <thead>
+                                            <tr>
+                                                <th>Time</th>
+                                                <th>IP Address</th>
+                                                <th>Page</th>
+                                                <th>Source</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr><td colspan="4" style="padding:20px; text-align:center;">Loading data...</td></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="admin-panel">
+                            <div class="admin-panel-heading">
+                                <div>
+                                    <h3>Email Campaign Analytics</h3>
+                                    <p>Select a campaign to inspect send volume, opens, and clicks.</p>
+                                </div>
+                            </div>
+
+                            <div class="admin-select-panel">
+                                <label for="analytics-campaign-select">Select Campaign to View</label>
+                                <select id="analytics-campaign-select">
+                                    <option value="" selected disabled>Select a campaign...</option>
+                                </select>
+                            </div>
+
+                            <div id="analytics-dashboard-content" style="display: none;">
+                                <div class="stats-summary">
+                                    <div class="stat-card"><h3>Sent</h3><p id="stat-sent">-</p></div>
+                                    <div class="stat-card"><h3>Opens</h3><p id="stat-opens">-</p></div>
+                                    <div class="stat-card"><h3>Clicks</h3><p id="stat-clicks">-</p></div>
+                                </div>
+                                <div class="stats-container">
+                                    <div class="stats-column">
+                                        <h4>Opened By <i class="fas fa-eye"></i></h4>
+                                        <ul id="analytics-opens-list" class="stats-list"></ul>
+                                    </div>
+                                    <div class="stats-column">
+                                        <h4>Clicked By <i class="fas fa-hand-pointer"></i></h4>
+                                        <ul id="analytics-clicks-list" class="stats-list"></ul>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -441,53 +641,65 @@
 
 <div id="page-careers" class="page">
     <div class="content-box">
-        <h2>Careers Management</h2>
-        <p>Manage open job postings and review incoming applications.</p>
-
-        <!-- Horizontal Tab Navigation -->
-        <div class="tab-nav-horizontal">
-            <button class="tab-btn active" data-tab="applications">
-                <i class="fas fa-users"></i> Recent Applications <span id="new-apps-count" class="tab-badge"></span>
-            </button>
-            <button class="tab-btn" data-tab="postings">
-                <i class="fas fa-bullhorn"></i> Manage Postings
-            </button>
-        </div>
-
-        <!-- Tab Content Area -->
-        <div class="tab-content-horizontal">
-            <!-- Applications Tab Pane -->
-            <div id="tab-pane-applications" class="tab-pane active">
-                 <div class="analytics-header" style="border-bottom: none; margin-bottom: 15px;">
-                    <h3 style="margin: 0; border: none; font-size: 1.5rem;">Incoming Applications</h3>
-                    <button class="btn-secondary" onclick="fetchCareers()"><i class="fas fa-sync-alt"></i> Refresh List</button>
+        <div class="admin-shell admin-shell-careers">
+            <div class="admin-shell-header">
+                <div class="admin-shell-title">
+                    <span class="admin-shell-eyebrow">Hiring Desk</span>
+                    <h2>Careers Management</h2>
+                    <p>Review applications and maintain job postings in the same consistent operations layout as the rest of the dashboard.</p>
                 </div>
-                <div style="overflow-x: auto;">
-                    <table id="careers-table">
-                        <thead>
-                            <tr>
-                                <th>Date</th>
-                                <th>Applicant</th>
-                                <th>Position</th>
-                                <th>Status</th>
-                                <th>Resume</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody><!-- Applications table body --></tbody>
-                    </table>
-                </div>
-                <div id="careers-status" class="status-message"></div>
             </div>
 
-            <!-- Postings Tab Pane -->
-            <div id="tab-pane-postings" class="tab-pane">
-                <div class="analytics-header" style="border-bottom: none; margin-bottom: 15px;">
-                    <h3 style="margin: 0; border: none; font-size: 1.5rem;">Job Postings</h3>
-                    <button id="btn-new-job-post" class="btn-primary"><i class="fas fa-plus"></i> New Job Post</button>
+            <div class="admin-panel">
+                <div class="admin-panel-heading">
+                    <div>
+                        <h3>Career Workspace</h3>
+                        <p>Switch between applicant review and job post management from the same section.</p>
+                    </div>
                 </div>
-                <div id="job-postings-list">
-                    <!-- Admin list of job posts will be loaded here -->
+
+                <div class="tab-nav-horizontal admin-tab-nav">
+                    <button class="tab-btn active" data-tab="applications">
+                        <i class="fas fa-users"></i> Recent Applications <span id="new-apps-count" class="tab-badge"></span>
+                    </button>
+                    <button class="tab-btn" data-tab="postings">
+                        <i class="fas fa-bullhorn"></i> Manage Postings
+                    </button>
+                </div>
+
+                <div class="tab-content-horizontal admin-tab-content">
+                    <div id="tab-pane-applications" class="tab-pane active">
+                         <div class="analytics-header admin-inline-header">
+                            <h3>Incoming Applications</h3>
+                            <button class="btn-secondary" onclick="fetchCareers()"><i class="fas fa-sync-alt"></i> Refresh List</button>
+                        </div>
+                        <div class="admin-table-wrap">
+                            <table id="careers-table">
+                                <thead>
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Applicant</th>
+                                        <th>Position</th>
+                                        <th>Status</th>
+                                        <th>Resume</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody><!-- Applications table body --></tbody>
+                            </table>
+                        </div>
+                        <div id="careers-status" class="status-message"></div>
+                    </div>
+
+                    <div id="tab-pane-postings" class="tab-pane">
+                        <div class="analytics-header admin-inline-header">
+                            <h3>Job Postings</h3>
+                            <button id="btn-new-job-post" class="btn-primary"><i class="fas fa-plus"></i> New Job Post</button>
+                        </div>
+                        <div id="job-postings-list">
+                            <!-- Admin list of job posts will be loaded here -->
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

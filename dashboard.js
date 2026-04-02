@@ -91,7 +91,10 @@ function showPage(pageId, dom, params = null) {
     if (pageId === 'page-clients') fetchClientData(dom);
     if (pageId === 'page-projects') fetchAdminProjects(dom);
     if (pageId === 'page-analytics') loadAnalyticsPageData(dom, params);
-    if (pageId === 'page-blog') fetchBlogPosts(dom);
+    if (pageId === 'page-blog') {
+        fetchBlogPosts(dom);
+        fetchBlogAssets();
+    }
 
     // --- CONSOLIDATED TAB LOGIC ---
 
@@ -234,48 +237,75 @@ async function loadDashboardData() {
 // --- NOTES MANAGER LOGIC (MULTI-NOTE VERSION) ---
 // ===================================================================
 
+let allNotesData = [];
+
 // Fetch all notes and render the list
 async function fetchNotesList() {
     const listEl = document.getElementById('notes-list');
-    listEl.innerHTML = '<li>Loading notes...</li>';
+    const totalCountEl = document.getElementById('notes-total-count');
+    if (!listEl) return;
+
+    listEl.innerHTML = '<div class="blog-list-empty">Loading notes...</div>';
     try {
         const { data, error } = await _supabase
             .from('dashboard_notes')
-            .select('id, title, created_at')
+            .select('id, title, content, created_at')
             .order('created_at', { ascending: false });
 
         if (error) throw error;
-        
-        listEl.innerHTML = '';
-        if (data.length === 0) {
-            listEl.innerHTML = '<li>No notes found.</li>';
-        } else {
-            data.forEach(note => {
-                const li = document.createElement('li');
-                li.dataset.noteId = note.id;
-                const date = new Date(note.created_at).toLocaleDateString();
-                li.innerHTML = `
-                    ${note.title || 'Untitled Note'}
-                    <span class="note-item-date">${date}</span>
-                `;
-                listEl.appendChild(li);
-            });
+
+        allNotesData = data || [];
+        if (totalCountEl) {
+            totalCountEl.textContent = allNotesData.length;
         }
+        renderNotesList(allNotesData);
     } catch (error) {
         console.error("Error fetching notes list:", error);
-        listEl.innerHTML = '<li>Error loading notes.</li>';
+        listEl.innerHTML = '<div class="blog-list-empty">Error loading notes.</div>';
     }
+}
+
+function renderNotesList(notes) {
+    const listEl = document.getElementById('notes-list');
+    const activeId = document.getElementById('note-id')?.value;
+    if (!listEl) return;
+
+    listEl.innerHTML = '';
+
+    if (!notes.length) {
+        listEl.innerHTML = '<div class="blog-list-empty">No notes found.</div>';
+        return;
+    }
+
+    notes.forEach(note => {
+        const card = document.createElement('article');
+        card.className = 'note-list-card';
+        card.dataset.noteId = note.id;
+        if (String(activeId) === String(note.id)) {
+            card.classList.add('active');
+        }
+
+        const date = new Date(note.created_at).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+        const excerpt = (note.content || '').trim().replace(/\s+/g, ' ').slice(0, 110);
+
+        card.innerHTML = `
+            <h4>${note.title || 'Untitled Note'}</h4>
+            <p>${excerpt || 'No content yet. Open this note to start writing.'}</p>
+            <div class="note-list-meta">${date}</div>
+        `;
+
+        listEl.appendChild(card);
+    });
 }
 
 // Load a single note's content into the editor
 async function loadNoteIntoEditor(noteId) {
     if (!noteId) return;
 
-    // Visually mark the active note
-    document.querySelectorAll('#notes-list li').forEach(li => {
-        li.classList.toggle('active', li.dataset.noteId == noteId);
+    document.querySelectorAll('#notes-list .note-list-card').forEach(card => {
+        card.classList.toggle('active', card.dataset.noteId == noteId);
     });
-    
+
     try {
         const { data, error } = await _supabase
             .from('dashboard_notes')
@@ -284,13 +314,13 @@ async function loadNoteIntoEditor(noteId) {
             .single();
 
         if (error) throw error;
-        
+
         document.getElementById('note-id').value = noteId;
         document.getElementById('note-title-input').value = data.title || '';
         document.getElementById('note-content-input').value = data.content || '';
         document.getElementById('btn-delete-note').style.display = 'block';
         document.getElementById('notes-status').style.display = 'none';
-
+        updateNotesPreview();
     } catch (error) {
         alert('Could not load the selected note.');
     }
@@ -302,8 +332,53 @@ function resetNoteForm() {
     document.getElementById('note-id').value = '';
     document.getElementById('btn-delete-note').style.display = 'none';
     document.getElementById('notes-status').style.display = 'none';
-    document.querySelectorAll('#notes-list li').forEach(li => li.classList.remove('active'));
+    document.querySelectorAll('#notes-list .note-list-card').forEach(card => card.classList.remove('active'));
+    const activeLabel = document.getElementById('notes-active-label');
+    if (activeLabel) activeLabel.textContent = 'New note';
+    updateNotesPreview();
     document.getElementById('note-title-input').focus();
+}
+
+function updateNotesPreview() {
+    const title = document.getElementById('note-title-input')?.value.trim() || 'Your note title will appear here';
+    const content = document.getElementById('note-content-input')?.value || '';
+    const previewTitle = document.getElementById('notes-preview-title');
+    const previewBody = document.getElementById('notes-preview-body');
+    const wordCountEl = document.getElementById('notes-word-count');
+    const activeLabel = document.getElementById('notes-active-label');
+
+    if (previewTitle) previewTitle.textContent = title;
+    if (previewBody) {
+        previewBody.innerHTML = '';
+        if (content.trim()) {
+            const paragraphs = content.split(/\n{2,}/).filter(Boolean);
+            paragraphs.forEach(paragraph => {
+                const p = document.createElement('p');
+                p.textContent = paragraph.trim();
+                previewBody.appendChild(p);
+            });
+        } else {
+            previewBody.innerHTML = '<p>Start typing to preview your note in a cleaner reading layout.</p>';
+        }
+    }
+
+    const wordCount = content.trim() ? content.trim().split(/\s+/).length : 0;
+    if (wordCountEl) wordCountEl.textContent = wordCount;
+    if (activeLabel) activeLabel.textContent = title.length > 24 ? `${title.slice(0, 24)}...` : title;
+}
+
+function filterNotesList() {
+    const query = document.getElementById('notes-search-input')?.value.trim().toLowerCase() || '';
+    if (!query) {
+        renderNotesList(allNotesData);
+        return;
+    }
+
+    const filtered = allNotesData.filter(note =>
+        (note.title || '').toLowerCase().includes(query) ||
+        (note.content || '').toLowerCase().includes(query)
+    );
+    renderNotesList(filtered);
 }
 
 // Save or create a note
@@ -315,26 +390,26 @@ async function saveNote(e) {
     const title = document.getElementById('note-title-input').value;
     const content = document.getElementById('note-content-input').value;
     const statusEl = document.getElementById('notes-status');
-    
+
     const noteData = { title, content };
 
     try {
         let result;
-        if (id) { // Update existing note
+        if (id) {
             result = await _supabase.from('dashboard_notes').update(noteData).eq('id', id);
-        } else { // Create new note
+        } else {
             result = await _supabase.from('dashboard_notes').insert([noteData]).select().single();
             if (result.data) {
-                document.getElementById('note-id').value = result.data.id; // Set ID for subsequent saves
+                document.getElementById('note-id').value = result.data.id;
                 document.getElementById('btn-delete-note').style.display = 'block';
             }
         }
 
         if (result.error) throw result.error;
-        
-        showStatusMessage(statusEl, 'Note saved successfully!', true);
-        fetchNotesList(); // Refresh the list to show new title or note
 
+        showStatusMessage(statusEl, 'Note saved successfully!', true);
+        updateNotesPreview();
+        fetchNotesList();
     } catch (error) {
         showStatusMessage(statusEl, `Error: ${error.message}`, false);
     }
@@ -345,7 +420,7 @@ async function saveNote(e) {
 async function deleteNote() {
     const id = document.getElementById('note-id').value;
     if (!id || !confirm('Are you sure you want to permanently delete this note?')) return;
-    
+
     setLoading(true);
     try {
         const { error } = await _supabase.from('dashboard_notes').delete().eq('id', id);
@@ -674,15 +749,15 @@ async function deleteJobPost() {
 async function fetchBlogPosts(dom) {
     setLoading(true);
     
-    const tbody = document.getElementById('blog-table-body');
+    const listContainer = document.getElementById('blog-list-container');
     const statusEl = document.getElementById('blog-status');
+    const totalCountEl = document.getElementById('blog-total-count');
 
-    if (tbody) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center"><i class="fas fa-spinner fa-spin"></i> Loading articles...</td></tr>';
+    if (listContainer) {
+        listContainer.innerHTML = '<div class="blog-list-empty"><i class="fas fa-spinner fa-spin"></i> Loading articles...</div>';
     }
 
     try {
-        // ERROR FIX: Changed 'updated_at' to 'created_at'
         const { data, error } = await _supabase
             .from('blog_posts')
             .select('title, slug, tag, created_at') 
@@ -690,15 +765,19 @@ async function fetchBlogPosts(dom) {
 
         if (error) throw error;
 
-        renderBlogTable(data || [], tbody);
+        if (totalCountEl) {
+            totalCountEl.textContent = (data || []).length;
+        }
+
+        renderBlogTable(data || [], listContainer);
         
         if (statusEl) {
             statusEl.style.display = 'none';
         }
     } catch (err) {
         console.error("Blog Fetch Error:", err);
-        if (tbody) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color: var(--danger-color);">Error loading data: ${err.message}</td></tr>`;
+        if (listContainer) {
+            listContainer.innerHTML = `<div class="blog-list-empty" style="color: var(--danger-color);">Error loading data: ${err.message}</div>`;
         }
         if (statusEl) {
             showStatusMessage(statusEl, `Error loading blog posts: ${err.message}`, false);
@@ -713,42 +792,45 @@ function renderBlogTable(posts, tbody) {
     tbody.innerHTML = '';
     
     if (!posts.length) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding: 20px;">No articles found. Click "New Article" to create one.</td></tr>';
+        tbody.innerHTML = '<div class="blog-list-empty">No articles found. Click "New Article" to create one.</div>';
         return;
     }
 
+    const currentSlug = document.getElementById('blog-id')?.value;
+
     posts.forEach(post => {
-        const tr = document.createElement('tr');
-        
-        // Format Date
+        const card = document.createElement('article');
+        card.className = 'blog-list-card';
+        if (currentSlug && currentSlug === post.slug) {
+            card.classList.add('active');
+        }
+
         const dateObj = new Date(post.created_at);
         const dateStr = !isNaN(dateObj) ? dateObj.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) : '-';
 
-        tr.innerHTML = `
-            <td style="font-weight: 500;">${post.title || '(No Title)'}</td>
-            <td><code style="background: #f1f5f9; padding: 2px 5px; border-radius: 4px; color: #64748b;">${post.slug}</code></td>
-            <td><span style="background: #e0f2fe; color: #0284c7; padding: 2px 8px; border-radius: 12px; font-size: 0.8rem;">${post.tag || 'General'}</span></td>
-            <td style="color: #64748b; font-size: 0.9rem;">${dateStr}</td>
-            <td style="text-align:right; white-space: nowrap;">
-                
-                <!-- View Button -->
-                <a href="blog.html?slug=${post.slug}" target="_blank" class="btn-info" style="padding: 6px 10px; margin-right: 4px; text-decoration: none; font-size: 13px; border-radius: 4px; display: inline-flex; align-items: center;" title="View Article">
+        card.innerHTML = `
+            <div class="blog-card-top">
+                <h4>${post.title || '(No Title)'}</h4>
+                <span class="blog-tag-pill">${post.tag || 'General'}</span>
+            </div>
+            <p class="blog-card-slug"><code>${post.slug}</code></p>
+            <p class="blog-card-date">Updated ${dateStr}</p>
+            <div class="blog-card-actions">
+                <a href="blog.html?slug=${post.slug}" target="_blank" class="btn-info" title="View Article" rel="noopener noreferrer">
                     <i class="fas fa-external-link-alt"></i>
                 </a>
-
-                <!-- Edit Button -->
-                <button class="btn-secondary" style="padding: 6px 10px; margin-right: 4px; font-size: 13px; width: auto;" onclick="loadBlogIntoForm('${post.slug}')" title="Edit">
-                    <i class="fas fa-edit"></i>
+                <button class="btn-secondary" type="button" title="Edit">
+                    <i class="fas fa-edit"></i> Edit
                 </button>
-
-                <!-- NEW: Delete Button -->
-                <button class="btn-danger" style="padding: 6px 10px; font-size: 13px; width: auto;" onclick="deleteBlogPost('${post.slug}')" title="Delete">
+                <button class="btn-danger" type="button" title="Delete">
                     <i class="fas fa-trash-alt"></i>
                 </button>
-            </td>
+            </div>
         `;
 
-        tbody.appendChild(tr);
+        card.querySelector('.btn-secondary').addEventListener('click', () => loadBlogIntoForm(post.slug));
+        card.querySelector('.btn-danger').addEventListener('click', () => deleteBlogPost(post.slug));
+        tbody.appendChild(card);
     });
 }
 
@@ -821,6 +903,8 @@ window.loadBlogIntoForm = async (slug) => {
         document.getElementById('blog-author-input').value = post.author || '';
         document.getElementById('blog-region-input').value = post.region || '';
         document.getElementById('blog-body-input').value = post.body_html || '';
+        updateBlogPreview();
+        fetchBlogPosts({});
 
         showStatusMessage(statusEl, `Loaded "${post.title}" for editing.`, true);
         
@@ -852,6 +936,8 @@ async function loadBlogIntoForm(slug) {
         document.getElementById('blog-author-input').value = post.author || '';
         document.getElementById('blog-region-input').value = post.region || '';
         document.getElementById('blog-body-input').value = post.body_html || '';
+        updateBlogPreview();
+        fetchBlogPosts({});
 
         if (statusEl) {
             statusEl.style.display = 'none';
@@ -872,8 +958,348 @@ function resetBlogForm() {
     document.getElementById('blog-author-input').value = '';
     document.getElementById('blog-region-input').value = '';
     document.getElementById('blog-body-input').value = '';
+    const blogImageUploadInput = document.getElementById('blog-image-upload-input');
+    if (blogImageUploadInput) blogImageUploadInput.value = '';
+    const blogDocumentUploadInput = document.getElementById('blog-document-upload-input');
+    if (blogDocumentUploadInput) blogDocumentUploadInput.value = '';
     const statusEl = document.getElementById('blog-status');
     if (statusEl) statusEl.style.display = 'none';
+    updateBlogPreview();
+    fetchBlogPosts({});
+    fetchBlogAssets();
+}
+
+function updateBlogPreview() {
+    const title = document.getElementById('blog-title-input')?.value.trim() || 'Your article title will appear here';
+    const slug = document.getElementById('blog-slug-input')?.value.trim() || 'new-article';
+    const tag = document.getElementById('blog-tag-input')?.value.trim() || 'Insight';
+    const author = document.getElementById('blog-author-input')?.value.trim();
+    const region = document.getElementById('blog-region-input')?.value.trim();
+    const bodyHtml = document.getElementById('blog-body-input')?.value || '';
+
+    const previewTitle = document.getElementById('blog-preview-title');
+    const previewTag = document.getElementById('blog-preview-tag');
+    const previewMeta = document.getElementById('blog-preview-meta');
+    const previewBody = document.getElementById('blog-preview-body');
+    const currentSlug = document.getElementById('blog-current-slug');
+    const wordCountEl = document.getElementById('blog-word-count');
+
+    if (previewTitle) previewTitle.textContent = title;
+    if (previewTag) previewTag.textContent = tag;
+
+    const metaParts = [];
+    if (author) metaParts.push(author);
+    if (region) metaParts.push(region);
+    metaParts.push('Ready for review');
+    if (previewMeta) previewMeta.textContent = metaParts.join(' | ');
+    if (currentSlug) currentSlug.textContent = slug;
+
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = bodyHtml;
+    const plainText = (tempDiv.textContent || tempDiv.innerText || '').trim();
+    const wordCount = plainText ? plainText.split(/\s+/).length : 0;
+    if (wordCountEl) wordCountEl.textContent = wordCount;
+
+    if (previewBody) {
+        previewBody.innerHTML = bodyHtml || '<p>Start writing in the editor to see a live preview of your article layout.</p>';
+    }
+}
+
+function escapeHtml(value = '') {
+    return value
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function insertHtmlAtCursor(textarea, html) {
+    if (!textarea) return;
+
+    const start = textarea.selectionStart ?? textarea.value.length;
+    const end = textarea.selectionEnd ?? textarea.value.length;
+    const prefix = textarea.value && !textarea.value.endsWith('\n') && start === textarea.value.length ? '\n\n' : '';
+    const suffix = end === textarea.value.length ? '\n' : '';
+
+    textarea.value = `${textarea.value.slice(0, start)}${prefix}${html}${suffix}${textarea.value.slice(end)}`;
+    const cursorPosition = start + prefix.length + html.length + suffix.length;
+    textarea.focus();
+    textarea.setSelectionRange(cursorPosition, cursorPosition);
+}
+
+function getBlogVideoEmbedUrl(url) {
+    if (!url) return null;
+
+    const youtubeRegex = /(?:https?:\/\/)?(?:www\.)?(?:youtube\.com\/(?:watch\?v=|embed\/|shorts\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/;
+    const youtubeMatch = url.match(youtubeRegex);
+    if (youtubeMatch && youtubeMatch[1]) {
+        return `https://www.youtube.com/embed/${youtubeMatch[1]}?rel=0`;
+    }
+
+    const vimeoRegex = /(?:https?:\/\/)?(?:www\.)?vimeo\.com\/(?:.*\/)?(\d+)/;
+    const vimeoMatch = url.match(vimeoRegex);
+    if (vimeoMatch && vimeoMatch[1]) {
+        return `https://player.vimeo.com/video/${vimeoMatch[1]}`;
+    }
+
+    return null;
+}
+
+function buildBlogImageMarkup(imageUrl, altText, captionText) {
+    const alt = escapeHtml(altText || 'Blog article image');
+    const caption = captionText ? `\n    <figcaption>${escapeHtml(captionText)}</figcaption>` : '';
+    return `<figure class="blog-media">\n    <img src="${imageUrl}" alt="${alt}" loading="lazy">\n${caption}\n</figure>`;
+}
+
+function buildBlogVideoMarkup(embedUrl, captionText) {
+    const caption = captionText ? `\n    <figcaption>${escapeHtml(captionText)}</figcaption>` : '';
+    return `<figure class="blog-media">\n    <div class="blog-video-embed">\n        <iframe src="${embedUrl}" title="Embedded video" loading="lazy" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>\n    </div>${caption}\n</figure>`;
+}
+
+function buildBlogDocumentMarkup(fileUrl, linkText) {
+    const safeLabel = escapeHtml(linkText || 'Download document');
+    return `<p><a href="${fileUrl}" target="_blank" rel="noopener noreferrer">${safeLabel}</a></p>`;
+}
+
+async function uploadBlogImage(file) {
+    const fileExt = file.name.split('.').pop();
+    const sanitizedBaseName = file.name.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase();
+    const filePath = `blog/${Date.now()}-${sanitizedBaseName}.${fileExt}`;
+
+    const { error } = await _supabase.storage.from('promotional_images').upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+    });
+    if (error) throw error;
+
+    const { data } = _supabase.storage.from('promotional_images').getPublicUrl(filePath);
+    return data.publicUrl;
+}
+
+async function uploadBlogDocument(file) {
+    const fileExt = file.name.split('.').pop();
+    const sanitizedBaseName = file.name.replace(/\.[^/.]+$/, '').replace(/[^a-zA-Z0-9_-]/g, '-').toLowerCase();
+    const filePath = `blog/${Date.now()}-${sanitizedBaseName}.${fileExt}`;
+
+    const { error } = await _supabase.storage.from('promotional_images').upload(filePath, file, {
+        cacheControl: '3600',
+        upsert: false
+    });
+    if (error) throw error;
+
+    const { data } = _supabase.storage.from('promotional_images').getPublicUrl(filePath);
+    return { publicUrl: data.publicUrl, filePath };
+}
+
+async function fetchBlogAssets() {
+    const grid = document.getElementById('blog-assets-grid');
+    const imageCountEl = document.getElementById('blog-image-count');
+    const documentCountEl = document.getElementById('blog-document-count');
+    if (!grid) return;
+
+    grid.innerHTML = '<div class="blog-list-empty"><i class="fas fa-spinner fa-spin"></i> Loading blog media...</div>';
+
+    try {
+        const { data: blogRootData, error: blogRootError } = await _supabase.storage
+            .from('promotional_images')
+            .list('blog', { limit: 100, offset: 0, sortBy: { column: 'created_at', order: 'desc' } });
+
+        if (blogRootError) throw blogRootError;
+
+        const assets = (blogRootData || [])
+            .filter(item => item.name && item.id)
+            .map(item => ({ ...item, type: isImageFileName(item.name) ? 'image' : 'document', path: `blog/${item.name}` }));
+
+        assets.sort((a, b) => new Date(b.updated_at || b.created_at || 0) - new Date(a.updated_at || a.created_at || 0));
+        const allImageAssets = assets.filter(asset => asset.type === 'image');
+        const allDocumentAssets = assets.filter(asset => asset.type === 'document');
+
+        if (imageCountEl) imageCountEl.textContent = `${allImageAssets.length} image${allImageAssets.length === 1 ? '' : 's'}`;
+        if (documentCountEl) documentCountEl.textContent = `${allDocumentAssets.length} document${allDocumentAssets.length === 1 ? '' : 's'}`;
+
+        renderBlogAssets(assets, grid);
+    } catch (error) {
+        grid.innerHTML = `<div class="blog-list-empty" style="color: var(--danger-color);">Unable to load blog media: ${error.message}</div>`;
+    }
+}
+
+function isImageFileName(fileName = '') {
+    return /\.(jpg|jpeg|png|gif|webp|svg)$/i.test(fileName);
+}
+
+function renderBlogAssets(assets, container) {
+    container.innerHTML = '';
+
+    if (!assets.length) {
+        container.innerHTML = '<div class="blog-list-empty">No blog media uploaded yet.</div>';
+        return;
+    }
+
+    assets.forEach(asset => {
+        const { data: { publicUrl } } = _supabase.storage.from('promotional_images').getPublicUrl(asset.path);
+        const card = document.createElement('div');
+        card.className = 'blog-asset-card';
+        const isImage = asset.type === 'image';
+        const fileSize = asset.metadata?.size ? `${(asset.metadata.size / 1024).toFixed(1)} KB` : 'Unknown size';
+        const updated = new Date(asset.updated_at || asset.created_at || Date.now()).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' });
+
+        card.innerHTML = `
+            <div class="blog-asset-preview ${isImage ? '' : 'is-document'}" ${isImage ? `style="background-image:url('${publicUrl}')"` : ''}>
+                ${isImage ? '' : '<i class="fas fa-file-alt"></i>'}
+            </div>
+            <div class="blog-asset-meta">
+                <input type="text" class="blog-asset-name" value="${asset.name}" data-original-name="${asset.name}" data-path="${asset.path}" data-type="${asset.type}">
+                <p class="blog-asset-subtext">${asset.type === 'image' ? 'Image' : 'Document'} | ${fileSize} | ${updated}</p>
+                <div class="blog-asset-actions">
+                    <button type="button" class="btn-secondary btn-blog-rename"><i class="fas fa-edit"></i> Rename</button>
+                    <button type="button" class="btn-info btn-blog-copy"><i class="fas fa-copy"></i> Copy URL</button>
+                    <button type="button" class="btn-secondary btn-blog-insert"><i class="fas fa-plus"></i> Insert</button>
+                    <button type="button" class="btn-danger btn-blog-delete"><i class="fas fa-trash-alt"></i> Delete</button>
+                </div>
+            </div>
+        `;
+
+        card.querySelector('.btn-blog-copy').addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(publicUrl);
+                showStatusMessage(document.getElementById('blog-status'), 'Asset URL copied.', true);
+            } catch {
+                showStatusMessage(document.getElementById('blog-status'), 'Could not copy asset URL.', false);
+            }
+        });
+
+        card.querySelector('.btn-blog-insert').addEventListener('click', () => {
+            const textarea = document.getElementById('blog-body-input');
+            if (!textarea) return;
+            if (isImage) {
+                insertHtmlAtCursor(textarea, buildBlogImageMarkup(publicUrl, asset.name.replace(/\.[^/.]+$/, ''), ''));
+            } else {
+                insertHtmlAtCursor(textarea, buildBlogDocumentMarkup(publicUrl, asset.name));
+            }
+            updateBlogPreview();
+            showStatusMessage(document.getElementById('blog-status'), 'Asset inserted into the article body.', true);
+        });
+
+        card.querySelector('.btn-blog-rename').addEventListener('click', async () => {
+            const input = card.querySelector('.blog-asset-name');
+            const oldName = input.dataset.originalName;
+            const newName = input.value.trim();
+            if (!newName || newName === oldName) return;
+
+            const basePath = asset.path.split('/').slice(0, -1).join('/');
+            try {
+                setLoading(true);
+                const { error } = await _supabase.storage.from('promotional_images').move(`${basePath}/${oldName}`, `${basePath}/${newName}`);
+                if (error) throw error;
+                showStatusMessage(document.getElementById('blog-status'), `Renamed to "${newName}".`, true);
+                fetchBlogAssets();
+            } catch (err) {
+                showStatusMessage(document.getElementById('blog-status'), `Rename failed: ${err.message}`, false);
+            }
+            setLoading(false);
+        });
+
+        card.querySelector('.btn-blog-delete').addEventListener('click', async () => {
+            if (!confirm(`Delete "${asset.name}"? This cannot be undone.`)) return;
+            try {
+                setLoading(true);
+                const { error } = await _supabase.storage.from('promotional_images').remove([asset.path]);
+                if (error) throw error;
+                showStatusMessage(document.getElementById('blog-status'), `"${asset.name}" deleted.`, true);
+                fetchBlogAssets();
+            } catch (err) {
+                showStatusMessage(document.getElementById('blog-status'), `Delete failed: ${err.message}`, false);
+            }
+            setLoading(false);
+        });
+
+        container.appendChild(card);
+    });
+}
+
+async function handleBlogImageUpload() {
+    const fileInput = document.getElementById('blog-image-upload-input');
+    const statusEl = document.getElementById('blog-status');
+    const textarea = document.getElementById('blog-body-input');
+    const file = fileInput?.files?.[0];
+
+    if (!file || !textarea) return;
+
+    const altText = window.prompt('Image alt text:', file.name.replace(/\.[^/.]+$/, '')) || '';
+    const captionText = window.prompt('Optional caption:', '') || '';
+
+    try {
+        setLoading(true);
+        const imageUrl = await uploadBlogImage(file);
+        insertHtmlAtCursor(textarea, buildBlogImageMarkup(imageUrl, altText, captionText));
+        showStatusMessage(statusEl, 'Image uploaded and inserted into the article.', true);
+        fetchBlogAssets();
+        updateBlogPreview();
+    } catch (err) {
+        showStatusMessage(statusEl, `Image upload failed: ${err.message}`, false);
+    }
+
+    if (fileInput) fileInput.value = '';
+    setLoading(false);
+}
+
+function handleBlogImageUrlInsert() {
+    const textarea = document.getElementById('blog-body-input');
+    const statusEl = document.getElementById('blog-status');
+    if (!textarea) return;
+
+    const imageUrl = window.prompt('Enter the image URL:');
+    if (!imageUrl) return;
+
+    const altText = window.prompt('Image alt text:', 'Blog article image') || '';
+    const captionText = window.prompt('Optional caption:', '') || '';
+    insertHtmlAtCursor(textarea, buildBlogImageMarkup(imageUrl.trim(), altText, captionText));
+    updateBlogPreview();
+    showStatusMessage(statusEl, 'Image markup inserted into the article.', true);
+}
+
+function handleBlogVideoInsert() {
+    const textarea = document.getElementById('blog-body-input');
+    const statusEl = document.getElementById('blog-status');
+    if (!textarea) return;
+
+    const videoUrl = window.prompt('Paste a YouTube or Vimeo URL:');
+    if (!videoUrl) return;
+
+    const embedUrl = getBlogVideoEmbedUrl(videoUrl.trim());
+    if (!embedUrl) {
+        showStatusMessage(statusEl, 'Only YouTube and Vimeo video URLs are supported right now.', false);
+        return;
+    }
+
+    const captionText = window.prompt('Optional video caption:', '') || '';
+    insertHtmlAtCursor(textarea, buildBlogVideoMarkup(embedUrl, captionText));
+    updateBlogPreview();
+    showStatusMessage(statusEl, 'Video embed inserted into the article.', true);
+}
+
+async function handleBlogDocumentUpload() {
+    const fileInput = document.getElementById('blog-document-upload-input');
+    const statusEl = document.getElementById('blog-status');
+    const textarea = document.getElementById('blog-body-input');
+    const file = fileInput?.files?.[0];
+
+    if (!file || !textarea) return;
+
+    try {
+        setLoading(true);
+        const { publicUrl } = await uploadBlogDocument(file);
+        insertHtmlAtCursor(textarea, buildBlogDocumentMarkup(publicUrl, file.name));
+        showStatusMessage(statusEl, 'Document uploaded and linked in the article.', true);
+        fetchBlogAssets();
+        updateBlogPreview();
+    } catch (err) {
+        showStatusMessage(statusEl, `Document upload failed: ${err.message}`, false);
+    }
+
+    if (fileInput) fileInput.value = '';
+    setLoading(false);
 }
 
 async function saveBlogFromForm(e) {
@@ -906,6 +1332,7 @@ async function saveBlogFromForm(e) {
         if (result.error) throw result.error;
 
         showStatusMessage(statusEl, 'Article saved successfully.', true);
+        updateBlogPreview();
         fetchBlogPosts({}); // refresh list
     } catch (err) {
         showStatusMessage(statusEl, `Error saving article: ${err.message}`, false);
@@ -1896,6 +2323,12 @@ document.addEventListener('DOMContentLoaded', () => {
         blogForm: document.getElementById('blog-form'),
         blogNewBtn: document.getElementById('blog-new-btn'),
         blogDeleteBtn: document.getElementById('blog-delete-btn'),
+        blogInsertImageBtn: document.getElementById('blog-insert-image-btn'),
+        blogInsertImageUrlBtn: document.getElementById('blog-insert-image-url-btn'),
+        blogInsertVideoBtn: document.getElementById('blog-insert-video-btn'),
+        blogInsertDocumentBtn: document.getElementById('blog-insert-document-btn'),
+        blogImageUploadInput: document.getElementById('blog-image-upload-input'),
+        blogDocumentUploadInput: document.getElementById('blog-document-upload-input'),
         btnNewProject: document.getElementById('btn-new-project'),
         projectModalOverlay: document.getElementById('project-modal-overlay'),
         projectModalClose: document.getElementById('project-modal-close'),
@@ -1916,10 +2349,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     window.dashboardDom = dom; // <<<<<<<< ADD THIS LINE
 
-    async function initializeDashboard() {
+async function initializeDashboard() {
         setLoading(true);
-        dom.loginOverlay.style.display = 'none';
-        dom.dashboardLayout.style.display = 'flex';
+    dom.loginOverlay.style.display = 'none';
+    dom.dashboardLayout.style.display = 'flex';
+    updateBlogPreview();
         try {
             dom.campaignLoader.textContent = 'Fetching dashboard data...';
             const [segmentsRes, imagesRes, templateRes] = await Promise.all([
@@ -1934,7 +2368,7 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // CORRECTED: The call to fetchSiteTraffic was removed from here.
             
-            handleHashChange();
+    handleHashChange();
         } catch(error) {
             alert(`Critical Error: Could not fetch dashboard data. ${error.message}`);
         }
@@ -2028,6 +2462,26 @@ async function handleUserSession() {
     if (dom.blogDeleteBtn) {
         dom.blogDeleteBtn.addEventListener('click', deleteCurrentBlog);
     }
+    if (dom.blogInsertImageBtn && dom.blogImageUploadInput) {
+        dom.blogInsertImageBtn.addEventListener('click', () => dom.blogImageUploadInput.click());
+        dom.blogImageUploadInput.addEventListener('change', handleBlogImageUpload);
+    }
+    if (dom.blogInsertImageUrlBtn) {
+        dom.blogInsertImageUrlBtn.addEventListener('click', handleBlogImageUrlInsert);
+    }
+    if (dom.blogInsertVideoBtn) {
+        dom.blogInsertVideoBtn.addEventListener('click', handleBlogVideoInsert);
+    }
+    if (dom.blogInsertDocumentBtn && dom.blogDocumentUploadInput) {
+        dom.blogInsertDocumentBtn.addEventListener('click', () => dom.blogDocumentUploadInput.click());
+        dom.blogDocumentUploadInput.addEventListener('change', handleBlogDocumentUpload);
+    }
+    ['blog-title-input', 'blog-slug-input', 'blog-tag-input', 'blog-author-input', 'blog-region-input', 'blog-body-input'].forEach(id => {
+        const field = document.getElementById(id);
+        if (field) {
+            field.addEventListener('input', updateBlogPreview);
+        }
+    });
 
     // =========================================================
     // --- PASTE THE NEW EVENT LISTENERS HERE ---
@@ -2387,6 +2841,18 @@ if (btnDeleteNote) {
     btnDeleteNote.addEventListener('click', deleteNote);
 }
 
+const notesSearchInput = document.getElementById('notes-search-input');
+if (notesSearchInput) {
+    notesSearchInput.addEventListener('input', filterNotesList);
+}
+
+['note-title-input', 'note-content-input'].forEach(id => {
+    const field = document.getElementById(id);
+    if (field) {
+        field.addEventListener('input', updateNotesPreview);
+    }
+});
+
 
 // Inside DOMContentLoaded at the bottom of dashboard.js
 
@@ -2461,3 +2927,4 @@ if (btnDeleteNote) {
     
     handleUserSession();
 });
+

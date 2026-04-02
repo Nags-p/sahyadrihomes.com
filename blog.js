@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
         if (error || !article) {
             if (titleEl) titleEl.textContent = 'Article not found';
-            if (metaEl) metaEl.textContent = 'We couldn’t find this insight. It may have been unpublished.';
+            if (metaEl) metaEl.textContent = 'We could not find this insight. It may have been unpublished.';
             if (errorEl) errorEl.style.display = 'block';
             return;
         }
@@ -53,7 +53,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 const dt = new Date(article.created_at);
                 parts.push(dt.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }));
             }
-            metaEl.textContent = parts.join(' • ') || 'Sahyadri Constructions Insights';
+            metaEl.textContent = parts.join(' | ') || 'Sahyadri Constructions Insights';
         }
 
         if (bodyEl) {
@@ -72,5 +72,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         console.error('Blog load error', e);
     }
 });
+
 
 

@@ -255,13 +255,15 @@ function initSwiper() {
     if (document.querySelector('.testimonial-swiper') && typeof Swiper !== 'undefined') {
         new Swiper('.testimonial-swiper', {
             loop: true,
-            spaceBetween: 30,
-            centeredSlides: true,
+            spaceBetween: 20,
+            centeredSlides: false,
             slidesPerView: 1,
+            watchOverflow: true,
             navigation: { nextEl: '.swiper-button-next', prevEl: '.swiper-button-prev' },
             breakpoints: {
-                768: { slidesPerView: 2, spaceBetween: 30, centeredSlides: false },
-                1024: { slidesPerView: 3, spaceBetween: 40, centeredSlides: false }
+                768: { slidesPerView: 1, spaceBetween: 20 },
+                992: { slidesPerView: 2, spaceBetween: 24 },
+                1400: { slidesPerView: 2, spaceBetween: 28 }
             }
         });
     }

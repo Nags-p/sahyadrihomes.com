@@ -16,25 +16,28 @@
     <header class="header" id="main-header"></header>
 
     <!-- MAIN -->
-    <main style="padding-top: 140px; padding-bottom: 80px;">
-        <section>
+    <main class="blog-page-main">
+        <section class="blog-page-shell">
             <div class="container">
                 <article class="insight-article" id="blog-article">
-                    <p class="insight-article-tag" id="blog-tag">Insights</p>
-                    <h1 id="blog-title">Loading article...</h1>
-                    <p class="insight-article-meta" id="blog-meta">Please wait while we fetch this insight.</p>
+                    <div class="insight-article-header">
+                        <a href="index.html#insights" class="blog-back-link"><i class="fas fa-arrow-left"></i> Back to Insights</a>
+                        <p class="insight-article-tag" id="blog-tag">Insights</p>
+                        <h1 id="blog-title">Loading article...</h1>
+                        <p class="insight-article-meta" id="blog-meta">Please wait while we fetch this insight.</p>
+                    </div>
                     <div id="blog-body" class="blog-body">
                         <!-- Body HTML will be injected here -->
                     </div>
 
                     <div class="insight-cta" id="blog-cta" style="display:none;">
                         <h3>Ready to discuss your project?</h3>
-                        <p>Share your requirements with our team and we’ll suggest the right structure, timeline and budget.</p>
+                        <p>Share your requirements with our team and we will suggest the right structure, timeline and budget.</p>
                         <a href="#" class="btn btn-primary quote-modal-trigger">Talk to {{ site.company_surname }}</a>
                     </div>
                 </article>
 
-                <div id="blog-error" style="max-width:800px;margin:30px auto 0;display:none;color:#b91c1c;">
+                <div id="blog-error" class="blog-error" style="display:none;">
                     Could not load this article. Please go back to the <a href="index.html#insights" style="color:#2563eb;">Insights section</a>.
                 </div>
             </div>
@@ -52,5 +55,3 @@
 </body>
 
 </html>
-
-
