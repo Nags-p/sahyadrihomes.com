@@ -1569,7 +1569,12 @@ section {
     .job-card .btn { width: 100%; }
     .project-info-grid { grid-template-columns: 1fr; }
     .project-details-card { order: -1; }
+
+    .logo img {
+        height: 52px;
+    }
 }
+
 
 /* ==================================================
    SERVICES PAGE SPECIFIC STYLES
