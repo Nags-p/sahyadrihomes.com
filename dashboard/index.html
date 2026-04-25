@@ -398,7 +398,17 @@
                             <button id="blog-new-btn" class="btn-primary"><i class="fas fa-plus"></i> New Article</button>
                         </div>
 
-                        <div class="blog-layout">
+                        <div class="tab-nav-horizontal blog-tab-nav">
+                            <button class="tab-btn active" type="button" data-blog-tab="library">
+                                <i class="fas fa-newspaper"></i> Article Library
+                            </button>
+                            <button class="tab-btn" type="button" data-blog-tab="editor">
+                                <i class="fas fa-pen-to-square"></i> Editor
+                            </button>
+                        </div>
+
+                        <div class="blog-tab-content">
+                            <section id="blog-tab-library" class="blog-tab-pane active">
                             <aside class="blog-library-panel">
                                 <div class="blog-library-summary">
                                     <div class="blog-library-stat">
@@ -420,7 +430,9 @@
                                     <div class="blog-list-empty">Loading articles...</div>
                                 </div>
                             </aside>
+                            </section>
 
+                            <section id="blog-tab-editor" class="blog-tab-pane">
                             <section class="blog-editor-panel">
                                 <form id="blog-form" class="blog-form">
                                     <input type="hidden" id="blog-id">
@@ -464,19 +476,47 @@
                                                     <span>Preview Mode</span>
                                                     <strong>Live</strong>
                                                 </div>
+                                                <div class="blog-editor-actions">
+                                                    <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Article</button>
+                                                    <button type="button" id="blog-delete-btn" class="btn-danger"><i class="fas fa-trash-alt"></i> Delete</button>
+                                                </div>
                                             </div>
 
-                                            <label for="blog-body-input">Body (HTML allowed)</label>
+                                            <label for="blog-visual-editor">Body</label>
                                             <div class="blog-editor-toolbar">
-                                                <button type="button" id="blog-insert-image-btn" class="btn-secondary"><i class="fas fa-image"></i> Upload Image</button>
+                                                <button type="button" class="btn-secondary" data-editor-command="formatBlock" data-editor-value="p"><i class="fas fa-paragraph"></i> Paragraph</button>
+                                                <button type="button" class="btn-secondary" data-editor-command="formatBlock" data-editor-value="h2"><i class="fas fa-heading"></i> H2</button>
+                                                <button type="button" class="btn-secondary" data-editor-command="formatBlock" data-editor-value="h3"><i class="fas fa-heading"></i> H3</button>
+                                                <button type="button" class="btn-secondary" data-editor-command="bold"><i class="fas fa-bold"></i></button>
+                                                <button type="button" class="btn-secondary" data-editor-command="italic"><i class="fas fa-italic"></i></button>
+                                                <button type="button" class="btn-secondary" data-editor-command="insertUnorderedList"><i class="fas fa-list-ul"></i></button>
+                                                <button type="button" class="btn-secondary" data-editor-command="insertOrderedList"><i class="fas fa-list-ol"></i></button>
+                                                <button type="button" class="btn-secondary" data-editor-command="justifyLeft" title="Align left"><i class="fas fa-align-left"></i></button>
+                                                <button type="button" class="btn-secondary" data-editor-command="justifyCenter" title="Align center"><i class="fas fa-align-center"></i></button>
+                                                <button type="button" class="btn-secondary" data-editor-command="justifyRight" title="Align right"><i class="fas fa-align-right"></i></button>
+                                                <button type="button" class="btn-secondary" data-editor-command="justifyFull" title="Justify"><i class="fas fa-align-justify"></i></button>
+                                                <button type="button" id="blog-insert-link-btn" class="btn-secondary"><i class="fas fa-link"></i> Link</button>
+                                                <button type="button" id="blog-clear-format-btn" class="btn-secondary"><i class="fas fa-eraser"></i></button>
+                                                <button type="button" id="blog-toggle-html-btn" class="btn-secondary"><i class="fas fa-code"></i> HTML</button>
+                                            </div>
+                                            <div class="blog-editor-toolbar blog-media-toolbar">
+                                                <button type="button" id="blog-insert-image-btn" class="btn-secondary"><i class="fas fa-image"></i> Insert Picture</button>
                                                 <button type="button" id="blog-insert-image-url-btn" class="btn-secondary"><i class="fas fa-link"></i> Image URL</button>
                                                 <button type="button" id="blog-insert-video-btn" class="btn-secondary"><i class="fas fa-video"></i> Video Embed</button>
                                                 <button type="button" id="blog-insert-document-btn" class="btn-secondary"><i class="fas fa-file-arrow-up"></i> Upload Document</button>
                                             </div>
                                             <input type="file" id="blog-image-upload-input" accept="image/jpeg, image/png, image/webp, image/gif" style="display: none;">
                                             <input type="file" id="blog-document-upload-input" accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt,.zip" style="display: none;">
-                                            <small>Use the media tools to insert hosted images, documents, or YouTube/Vimeo videos into the article body.</small>
-                                            <textarea id="blog-body-input" rows="16" placeholder="Paste or write your article content in HTML"></textarea>
+                                            <small>Write normally, use the toolbar for formatting, and switch to HTML only when you need advanced edits.</small>
+                                            <div id="blog-image-resize-toolbar" class="blog-image-resize-toolbar" hidden>
+                                                <span>Image size</span>
+                                                <button type="button" class="btn-secondary" data-image-width="25">25%</button>
+                                                <button type="button" class="btn-secondary" data-image-width="50">50%</button>
+                                                <button type="button" class="btn-secondary" data-image-width="75">75%</button>
+                                                <button type="button" class="btn-secondary" data-image-width="100">100%</button>
+                                            </div>
+                                            <div id="blog-visual-editor" class="blog-visual-editor" contenteditable="true" role="textbox" aria-multiline="true" aria-label="Blog article body"></div>
+                                            <textarea id="blog-body-input" class="blog-html-source" rows="16" placeholder="Paste or write your article content in HTML"></textarea>
                                         </div>
 
                                         <div class="blog-preview-panel">
@@ -491,29 +531,35 @@
                                         </div>
                                     </div>
 
-                                    <div class="blog-assets-panel">
-                                        <div class="blog-assets-header">
-                                            <div>
-                                                <h3>Blog Media Library</h3>
-                                                <p>Rename, delete, copy, or insert uploaded blog images and documents.</p>
-                                            </div>
-                                            <div class="blog-assets-stats">
-                                                <span id="blog-image-count">0 images</span>
-                                                <span id="blog-document-count">0 documents</span>
-                                            </div>
-                                        </div>
-                                        <div id="blog-assets-grid" class="blog-assets-grid">
-                                            <div class="blog-list-empty">No blog media uploaded yet.</div>
-                                        </div>
-                                    </div>
-
-                                    <div class="button-group" style="margin-top:15px;">
-                                        <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Article</button>
-                                        <button type="button" id="blog-delete-btn" class="btn-danger"><i class="fas fa-trash-alt"></i> Delete</button>
-                                    </div>
                                     <div id="blog-status" class="status-message"></div>
                                 </form>
                             </section>
+                            </section>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="blog-media-modal" class="blog-media-modal" aria-hidden="true">
+                <div class="blog-media-modal-backdrop" data-blog-media-close></div>
+                <div class="blog-media-dialog" role="dialog" aria-modal="true" aria-labelledby="blog-media-title">
+                    <div class="blog-assets-panel">
+                        <div class="blog-assets-header">
+                            <div>
+                                <h3 id="blog-media-title">Blog Media Library</h3>
+                                <p>Upload, rename, delete, copy, or insert uploaded blog images and documents.</p>
+                            </div>
+                            <div class="blog-assets-controls">
+                                <button type="button" id="blog-upload-picture-btn" class="btn-primary"><i class="fas fa-upload"></i> Upload Picture</button>
+                                <button type="button" class="btn-secondary" data-blog-media-close><i class="fas fa-times"></i> Close</button>
+                                <div class="blog-assets-stats">
+                                    <span id="blog-image-count">0 images</span>
+                                    <span id="blog-document-count">0 documents</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="blog-assets-grid" class="blog-assets-grid">
+                            <div class="blog-list-empty">No blog media uploaded yet.</div>
                         </div>
                     </div>
                 </div>
