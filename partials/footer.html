@@ -3,8 +3,8 @@
 <!-- footer.html -->
 <div class="container">
     <div class="footer-top">
-        <a href="/" class="footer-logo">
-            <img src="/images/logo.png" alt="Logo">
+        <a href="{{ '/' | relative_url }}" class="footer-logo">
+            <img src="{{ '/images/logo.png' | relative_url }}" alt="Logo">
             <span>{{ site.company_name }}</span>
         </a>
         <div class="footer-socials">
@@ -32,28 +32,28 @@
         <div class="footer-col">
             <h4>Company</h4>
             <ul>
-                <li><a href="/#about">About Us</a></li>
-                <li><a href="/#projects">Our Portfolio</a></li>
-                <li><a href="/#testimonials">Testimonials</a></li>
-                <li><a href="/careers/">Careers</a></li>
-                <li><a href="/safety/">Safety & Compliance</a></li>
-                <li><a href="/#contact">Contact</a></li>
+                <li><a href="{{ '/#about' | relative_url }}">About Us</a></li>
+                <li><a href="{{ '/#projects' | relative_url }}">Our Portfolio</a></li>
+                <li><a href="{{ '/#testimonials' | relative_url }}">Testimonials</a></li>
+                <li><a href="{{ '/careers/' | relative_url }}">Careers</a></li>
+                <li><a href="{{ '/safety/' | relative_url }}">Safety & Compliance</a></li>
+                <li><a href="{{ '/#contact' | relative_url }}">Contact</a></li>
             </ul>
         </div>
         <div class="footer-col">
             <h4>Services</h4>
             <ul>
-                <li><a href="/services/">Residential</a></li>
-                <li><a href="/services/">Commercial</a></li>
-                <li><a href="/services/">Renovation</a></li>
-                <li><a href="/services/">Architecture</a></li>
+                <li><a href="{{ '/services/' | relative_url }}">Residential</a></li>
+                <li><a href="{{ '/services/' | relative_url }}">Commercial</a></li>
+                <li><a href="{{ '/services/' | relative_url }}">Renovation</a></li>
+                <li><a href="{{ '/services/' | relative_url }}">Architecture</a></li>
             </ul>
         </div>
         <div class="footer-col">
             <h4>Security</h4>
             <ul>
-                <li><a href="/privacy-policy/">Privacy policy</a></li>
-                <li><a href="/terms-conditions/">Terms and Conditions</a></li>
+                <li><a href="{{ '/privacy-policy/' | relative_url }}">Privacy policy</a></li>
+                <li><a href="{{ '/terms-conditions/' | relative_url }}">Terms and Conditions</a></li>
             </ul>
         </div>
         
@@ -65,8 +65,8 @@
 
     <!-- FLOATING -->
     <a href="https://wa.me/{{ site.phone }}" class="whatsapp-float-btn float-btn" target="_blank"><img
-            src="/images/whatsapp-icon.png"></a>
-    <a href="tel:{{ site.phone }}" class="call-float-btn float-btn" target="_blank"><img src="/images/call-icon.png"></a>
+            src="{{ '/images/whatsapp-icon.png' | relative_url }}"></a>
+    <a href="tel:{{ site.phone }}" class="call-float-btn float-btn" target="_blank"><img src="{{ '/images/call-icon.png' | relative_url }}"></a>
     <a href="#" id="back-to-top-btn" class="back-to-top-btn"><i class="fas fa-chevron-up"></i></a>
 
 
@@ -108,7 +108,7 @@
 
             <div class="consent-group" style="margin-top:20px; margin-bottom:20px; display: flex; gap: 10px; align-items: flex-start;">
                 <input type="checkbox" id="modal_consent" name="consent" checked required style="width:auto; margin-top: 5px;">
-                <label for="modal_consent" style="font-size:0.9rem; color: var(--text-secondary);">I agree to the <a href="/privacy-policy/" style="color:#3b82f6">Privacy Policy </a>and consent to being contacted.</label>
+                <label for="modal_consent" style="font-size:0.9rem; color: var(--text-secondary);">I agree to the <a href="{{ '/privacy-policy/' | relative_url }}" style="color:#3b82f6">Privacy Policy </a>and consent to being contacted.</label>
             </div>
             
             <button type="submit" id="modal-submit-btn" class="btn btn-primary" style="width: 100%;">

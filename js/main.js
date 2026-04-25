@@ -16,6 +16,10 @@ function siteAsset(path) {
     return new URL(path.replace(/^\/+/, ''), SITE_ROOT_URL).href;
 }
 
+function siteRoute(path) {
+    return siteAsset(path);
+}
+
 function normalizePath(pathname) {
     const normalized = pathname.replace(/\/index\.html$/, '/');
     return normalized.endsWith('/') ? normalized : `${normalized}/`;
@@ -166,7 +170,7 @@ function initHeaderLogic() {
 // --- 3. SCROLL SPY (Updates Blue Line on Scroll) ---
 function initScrollSpy() {
     // Only run on the Homepage
-    const isHome = normalizePath(window.location.pathname) === '/';
+    const isHome = normalizePath(window.location.pathname) === normalizePath(SITE_ROOT_URL.pathname);
     
     if (!isHome) return;
 
@@ -218,7 +222,7 @@ function initScrollSpy() {
         // Step 4: If no section link was activated (e.g., we are at the top in the 'hero' section),
         // explicitly activate the main "Home" link.
         if (!activeLinkFound) {
-            const homeLink = navLinks.find(link => link.getAttribute('href') === '/');
+            const homeLink = navLinks.find(link => normalizePath(new URL(link.getAttribute('href'), window.location.href).pathname) === normalizePath(SITE_ROOT_URL.pathname));
             if (homeLink) {
                 homeLink.classList.add('active');
             }
@@ -523,7 +527,7 @@ async function loadRecentInsights(container) {
                     <span class="insight-tag">${post.tag || 'Update'}</span>
                     <h3>${post.title}</h3>
                     <p class="insight-excerpt">${excerpt}</p>
-                    <a href="/blog/?slug=${post.slug}">Read insight <i class="fas fa-arrow-right" style="font-size:0.8em;"></i></a>
+                    <a href="${siteRoute(`blog/?slug=${post.slug}`)}">Read insight <i class="fas fa-arrow-right" style="font-size:0.8em;"></i></a>
                 </article>
             `;
 
@@ -577,7 +581,7 @@ async function loadAllInsights(container) {
                     </div>
                     <h3>${post.title}</h3>
                     <p class="insight-excerpt">${excerpt}</p>
-                    <a href="/blog/?slug=${post.slug}">Read article <i class="fas fa-arrow-right" style="font-size:0.8em;"></i></a>
+                    <a href="${siteRoute(`blog/?slug=${post.slug}`)}">Read article <i class="fas fa-arrow-right" style="font-size:0.8em;"></i></a>
                 </article>
             `;
 
@@ -677,7 +681,7 @@ function renderProjects(projectsToRender) {
             <div class="project-overlay">
                 <h3>${project.title}</h3>
                 <p>${project.type || 'Project'} • ${project.scope || 'Details'}</p>
-                <a href="/project-page/?id=${project.id}" class="btn btn-primary btn-sm">View Details</a>
+                <a href="${siteRoute(`project-page/?id=${project.id}`)}" class="btn btn-primary btn-sm">View Details</a>
             </div>
         `;
         container.appendChild(projectCard);

@@ -66,7 +66,7 @@ function renderAllProjects(projectList) {
             <div class="project-overlay">
                 <h3>${project.title}</h3>
                 <p>${project.type || 'Project'} • ${project.scope || 'Details'}</p>
-                <a href="/project-page/?id=${project.id}" class="btn btn-primary btn-sm">View Details</a>
+                <a href="../project-page/?id=${project.id}" class="btn btn-primary btn-sm">View Details</a>
             </div>
         `;
         grid.appendChild(card);

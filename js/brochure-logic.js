@@ -34,7 +34,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 projectItem.className = 'project-item';
                 
                 projectItem.innerHTML = `
-                    <a href="/project-page/?id=${project.id}" target="_blank">
+                    <a href="../project-page/?id=${project.id}" target="_blank">
                         <img src="${thumbnailUrl}" alt="${project.title}">
                         <div class="project-item-details">
                             <h4>${project.title}</h4>
