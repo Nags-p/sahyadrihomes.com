@@ -6,7 +6,7 @@
     <title>Sahyadri Admin Dashboard</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
-    <link rel="stylesheet" href="dashboard.css">
+    <link rel="stylesheet" href="../dashboard.css">
 </head>
 <body>
     <!-- 1. ADDED: Sidebar Overlay for Mobile -->
@@ -37,7 +37,7 @@
             </div>
             <nav class="sidebar-nav">
                 <ul>
-                    <!-- <li onclick="window.location.href='erp/dashboard.html'">
+                    <!-- <li onclick="window.location.href='erp/dashboard/'">
                         <i class="fas fa-cogs"></i> ERP Panel
                     </li> -->
                     <li class="sidebar-divider"></li> <!-- A visual separator -->
@@ -434,7 +434,7 @@
                                         <div class="blog-field">
                                             <label for="blog-slug-input">Slug (URL key)</label>
                                             <input type="text" id="blog-slug-input" required placeholder="e.g. soil-testing">
-                                            <small>Final URL: <code>blog.html?slug=your-slug</code></small>
+                                            <small>Final URL: <code>/blog/?slug=your-slug</code></small>
                                         </div>
 
                                         <div class="blog-field">
@@ -863,8 +863,8 @@
 </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="config.js" defer></script>
-    <script src="dashboard.js" defer></script>
+    <script src="../js/config.js" defer></script>
+    <script src="../js/dashboard.js" defer></script>
 
     <!-- 3. ADDED: Mobile Sidebar Logic -->
     <script>

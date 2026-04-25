@@ -816,7 +816,7 @@ function renderBlogTable(posts, tbody) {
             <p class="blog-card-slug"><code>${post.slug}</code></p>
             <p class="blog-card-date">Updated ${dateStr}</p>
             <div class="blog-card-actions">
-                <a href="blog.html?slug=${post.slug}" target="_blank" class="btn-info" title="View Article" rel="noopener noreferrer">
+                <a href="/blog/?slug=${post.slug}" target="_blank" class="btn-info" title="View Article" rel="noopener noreferrer">
                     <i class="fas fa-external-link-alt"></i>
                 </a>
                 <button class="btn-secondary" type="button" title="Edit">
@@ -2409,7 +2409,7 @@ async function handleUserSession() {
             await _supabase.auth.signOut();
             // Redirect to the main website's homepage, not the login form,
             // as they are not an authorized admin.
-            window.location.href = 'index.html'; 
+            window.location.href = '/';
             return; // Stop further execution
         }
         // --- END OF SECURITY CHECK ---

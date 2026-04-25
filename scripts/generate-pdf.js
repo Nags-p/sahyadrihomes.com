@@ -4,9 +4,10 @@ const path = require('path');
 
 const app = express();
 const port = 3000;
+const siteRoot = path.join(__dirname, '..');
 
 // This allows the server to serve files from your project directory (like images and CSS)
-app.use(express.static(path.join(__dirname)));
+app.use(express.static(siteRoot));
 
 // The main endpoint to generate the PDF
 app.get('/generate-pdf', async (req, res) => {
@@ -19,7 +20,7 @@ app.get('/generate-pdf', async (req, res) => {
 
         // Navigate to your local brochure HTML file
         // We use the server's own URL to make sure all assets (images, CSS) load correctly.
-        const fileUrl = `http://localhost:${port}/brochure-generator.html`;
+        const fileUrl = `http://localhost:${port}/brochure-generator/`;
         await page.goto(fileUrl, {
             waitUntil: 'networkidle0' // Waits until the network is quiet (all images/data loaded)
         });

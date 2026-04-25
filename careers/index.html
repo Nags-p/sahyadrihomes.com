@@ -6,10 +6,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Careers - {{ site.company_name }}</title>
-    <link href="images/logo.png" rel="icon">
+    <link href="../images/logo.png" rel="icon">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.2.0/css/all.min.css">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="../style.css">
 </head>
 <body>
 
@@ -93,7 +93,7 @@
     </section>
 
     <!-- 4. CURRENT OPENINGS -->
-    <!-- In careers.html -->
+    <!-- In /careers/ -->
 <section id="openings" style="background-color: var(--light-gray);">
     <div class="container">
         <h2 class="section-title">Current Openings</h2>
@@ -107,7 +107,7 @@
 
     <!-- 5. APPLICATION FORM -->
     <section id="apply">
-        <!-- Updated Form Section in careers.html -->
+        <!-- Updated Form Section in /careers/ -->
 <div class="contact-form contact-card" style="max-width: 700px; margin: 0 auto;">
     <h3>Apply Now</h3>
     <p style="margin-bottom: 20px; color: var(--text-secondary);">Don't see your role? Send us your CV.</p>
@@ -153,9 +153,9 @@
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <!-- Reuse main.js for form logic -->
-    <script src="main.js" defer></script> 
+    <script src="../js/main.js" defer></script> 
     
     <!-- Career Specific Logic (Form, Status Check) -->
-    <script src="careers.js" defer></script> 
+    <script src="../js/careers.js" defer></script> 
 </body>
 </html>
