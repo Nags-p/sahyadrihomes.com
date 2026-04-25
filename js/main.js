@@ -158,8 +158,9 @@ function initHeaderLogic() {
         const href = link.getAttribute('href');
         if (!href || href.startsWith('#') || href.startsWith('tel:') || href.startsWith('mailto:')) return;
 
-        const linkPath = normalizePath(new URL(href, window.location.origin).pathname);
-        if (linkPath === currentPath) {
+        const linkUrl = new URL(href, window.location.href);
+        const linkPath = normalizePath(linkUrl.pathname);
+        if (linkPath === currentPath && !linkUrl.hash) {
             link.classList.add('active');
         }
     });
@@ -207,7 +208,7 @@ function initScrollSpy() {
             if (!href) return;
 
             // Check if the link's hash (#) matches the current section's ID
-            if (href.includes('#' + currentSectionId)) {
+            if (currentSectionId && href.includes('#' + currentSectionId)) {
                 link.classList.add('active');
                 activeLinkFound = true;
                 
@@ -222,12 +223,19 @@ function initScrollSpy() {
         // Step 4: If no section link was activated (e.g., we are at the top in the 'hero' section),
         // explicitly activate the main "Home" link.
         if (!activeLinkFound) {
-            const homeLink = navLinks.find(link => normalizePath(new URL(link.getAttribute('href'), window.location.href).pathname) === normalizePath(SITE_ROOT_URL.pathname));
+            const homeLink = navLinks.find(link => {
+                const href = link.getAttribute('href');
+                if (!href) return false;
+                const linkUrl = new URL(href, window.location.href);
+                return normalizePath(linkUrl.pathname) === normalizePath(SITE_ROOT_URL.pathname) && !linkUrl.hash;
+            });
             if (homeLink) {
                 homeLink.classList.add('active');
             }
         }
     });
+
+    window.dispatchEvent(new Event('scroll'));
 }
 // --- 4. SCROLL ANIMATIONS ---
 function initScrollAnimations() {
