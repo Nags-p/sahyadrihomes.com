@@ -17,7 +17,7 @@ async function loadJobPostings() {
     const container = document.querySelector('.job-list');
     const positionDropdown = document.querySelector('select[name="position"]');
 
-    if (!container || !positionDropdown) return;
+    if (!container) return;
     
     container.innerHTML = '<p style="text-align: center;">Loading openings...</p>';
     
@@ -31,15 +31,17 @@ async function loadJobPostings() {
         if (error) throw error;
         
         // --- 1. POPULATE THE DROPDOWN DYNAMICALLY ---
-        positionDropdown.innerHTML = '<option value="" disabled selected>Position Applying For</option>'; // Reset
-        activeJobs.forEach(job => {
-            const option = document.createElement('option');
-            option.value = job.title;
-            option.textContent = job.title;
-            positionDropdown.appendChild(option);
-        });
-        // Add the general application option at the end
-        positionDropdown.innerHTML += '<option value="General Application">General Application</option>';
+        if (positionDropdown) {
+            positionDropdown.innerHTML = '<option value="" disabled selected>Position Applying For</option>'; // Reset
+            activeJobs.forEach(job => {
+                const option = document.createElement('option');
+                option.value = job.title;
+                option.textContent = job.title;
+                positionDropdown.appendChild(option);
+            });
+            // Add the general application option at the end
+            positionDropdown.innerHTML += '<option value="General Application">General Application</option>';
+        }
         
         // --- 2. RENDER THE JOB CARDS on the page ---
         // (We re-fetch here to get all data, or you can modify the first query to get all columns)
@@ -99,20 +101,9 @@ async function loadJobPostings() {
                     </p>
                     ${descriptionHtml}
                 </div>
-                <a href="#apply" class="btn btn-secondary apply-now-btn" data-position="${post.title}">Apply Now</a>
+                <a href="?id=${post.id}" class="btn btn-secondary apply-now-btn">Apply Now</a>
             `;
             container.appendChild(card);
-        });
-// ...
-        
-        // --- 3. ADD EVENT LISTENERS TO THE NEW BUTTONS ---
-        document.querySelectorAll('.apply-now-btn').forEach(button => {
-            button.addEventListener('click', (e) => {
-                const position = e.target.dataset.position;
-                if (position) {
-                    positionDropdown.value = position;
-                }
-            });
         });
 
     } catch (err) {
@@ -121,7 +112,157 @@ async function loadJobPostings() {
     }
 }
 
-    loadJobPostings();
+    // =======================
+    // DYNAMIC SUBPAGE CHECK
+    // =======================
+    const urlParams = new URLSearchParams(window.location.search);
+    const jobId = urlParams.get('id');
+
+    if (jobId) {
+        loadJobDetail(jobId);
+    } else {
+        loadJobPostings();
+    }
+
+    async function loadJobDetail(id) {
+        const mainHero = document.querySelector('#hero');
+        const checkStatus = document.querySelector('#check-status');
+        const culture = document.querySelector('#culture');
+        const openings = document.querySelector('#openings');
+        const applySection = document.querySelector('#apply');
+        const detailView = document.getElementById('job-detail-view');
+
+        if (!detailView) return;
+
+        try {
+            // Fetch specific job by ID from Supabase
+            const { data: job, error } = await _supabase
+                .from('job_postings')
+                .select('*')
+                .eq('id', id)
+                .eq('is_active', true)
+                .single();
+
+            if (error || !job) {
+                throw new Error("Job not found");
+            }
+
+            // Hide all main pages
+            if (mainHero) mainHero.style.display = 'none';
+            if (checkStatus) checkStatus.style.display = 'none';
+            if (culture) culture.style.display = 'none';
+            if (openings) openings.style.display = 'none';
+            if (applySection) applySection.style.display = 'none';
+
+            // Show detail view
+            detailView.style.display = 'block';
+
+            // Populate detail view content
+            document.getElementById('detail-title').textContent = job.title;
+            document.getElementById('detail-location').textContent = job.location;
+            
+            const typeEl = document.getElementById('detail-job-type');
+            typeEl.textContent = job.job_type || 'Full Time';
+
+            // Format description points into HTML list
+            const descContainer = document.getElementById('detail-description-content');
+            if (job.description) {
+                const points = job.description.split('\n').filter(p => p.trim() !== '');
+                if (points.length > 1) {
+                    let html = '<ul class="job-description-list" style="margin-left: 20px;">';
+                    points.forEach(point => {
+                        html += `<li style="margin-bottom: 8px;">${point}</li>`;
+                    });
+                    html += '</ul>';
+                    descContainer.innerHTML = html;
+                } else {
+                    descContainer.innerHTML = `<p>${job.description}</p>`;
+                }
+            } else {
+                descContainer.innerHTML = '<p>No description provided.</p>';
+            }
+
+            // Set position for the application form
+            document.getElementById('apply-position-input').value = job.title;
+
+            // Setup detail form submission
+            const detailForm = document.getElementById('job-apply-form');
+            const detailBtn = document.getElementById('detail-submit-btn');
+            const detailThankYou = document.getElementById('detail-thank-you');
+            const detailStatus = document.getElementById('detail-form-status');
+
+            if (detailForm) {
+                detailForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    detailBtn.disabled = true;
+                    detailBtn.textContent = 'Uploading...';
+                    detailStatus.textContent = '';
+
+                    try {
+                        const formData = new FormData(detailForm);
+                        const file = document.getElementById('detail_resume_upload').files[0];
+                        let resumeUrl = null;
+
+                        if (file) {
+                            const fileExt = file.name.split('.').pop();
+                            const fileName = `resumes/${Date.now()}-${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`; 
+                            
+                            const { error: uploadError } = await _supabase.storage
+                                .from('contact_uploads')
+                                .upload(fileName, file);
+
+                            if (uploadError) throw new Error(`Resume upload failed: ${uploadError.message}`);
+                            
+                            const { data } = _supabase.storage
+                                .from('contact_uploads')
+                                .getPublicUrl(fileName);
+                                
+                            resumeUrl = data.publicUrl;
+                        }
+
+                        const { error: dbError } = await _supabase
+                            .from('job_applications')
+                            .insert([{
+                                name: formData.get('name'),
+                                email: formData.get('email'),
+                                phone: formData.get('phone'),
+                                position: formData.get('position'),
+                                message: formData.get('message'),
+                                resume_url: resumeUrl,
+                                status: 'New'
+                            }]);
+
+                        if (dbError) throw new Error(dbError.message);
+
+                        detailForm.style.display = 'none';
+                        if (detailThankYou) {
+                            detailThankYou.style.display = 'block';
+                        }
+
+                    } catch (error) {
+                        console.error(error);
+                        detailStatus.textContent = `Error: ${error.message}`;
+                        detailStatus.style.color = 'red';
+                        detailBtn.disabled = false;
+                        detailBtn.textContent = 'Submit Application';
+                    }
+                });
+            }
+
+        } catch (err) {
+            console.error(err);
+            // Fallback to listings if job not found
+            if (detailView) {
+                detailView.innerHTML = `
+                    <div class="container" style="max-width: 800px; padding-top: 140px; text-align: center;">
+                        <h2 style="border: none; margin-bottom: 15px;">Job Posting Not Found</h2>
+                        <p style="color: var(--text-secondary); margin-bottom: 25px;">The job posting you are looking for does not exist or has expired.</p>
+                        <a href="." class="btn btn-primary">Back to All Openings</a>
+                    </div>`;
+                detailView.style.display = 'block';
+            }
+        }
+    }
 
 
     // =======================
@@ -169,7 +310,7 @@ async function loadJobPostings() {
                         name: formData.get('name'),
                         email: formData.get('email'),
                         phone: formData.get('phone'),
-                        position: formData.get('position'),
+                        position: formData.get('position') || 'General Application',
                         message: formData.get('message'),
                         resume_url: resumeUrl,
                         status: 'New'

@@ -108,9 +108,11 @@
     <!-- 5. APPLICATION FORM -->
     <section id="apply">
         <!-- Updated Form Section in /careers/ -->
-<div class="contact-form contact-card" style="max-width: 700px; margin: 0 auto;">
-    <h3>Apply Now</h3>
-    <p style="margin-bottom: 20px; color: var(--text-secondary);">Don't see your role? Send us your CV.</p>
+<div class="contact-form contact-card" style="max-width: 700px; margin: 0 auto; padding: 40px;">
+    <h3 style="color: var(--brand-navy); margin-bottom: 12px; font-weight: 700; border: none; padding: 0; font-size: 1.5rem;">Don't see a role that matches your skills?</h3>
+    <p style="margin-bottom: 24px; color: var(--text-secondary); line-height: 1.6; font-size: 1rem;">
+        We are always on the lookout for talented, passionate, and driven professionals to join the Sahyadri team. Submit your CV and tell us about your expertise—we will keep your profile in our active database and reach out to you as soon as a suitable opportunity opens up!
+    </p>
     
     <!-- CHANGED ID to 'career-form' -->
     <form id="career-form">
@@ -118,13 +120,7 @@
         <input type="email" name="email" placeholder="Email Address" required>
         <input type="tel" name="phone" placeholder="Phone Number" required>
         
-        <div class="form-group select-wrapper">
-        <!-- The name="position" is important -->
-            <select name="position" required style="width: 100%; padding: 14px; border: 1px solid #cbd5e1; border-radius: 8px; margin-bottom: 16px; font-family: var(--font-main);">
-            <!-- LEAVE THIS EMPTY - JS WILL POPULATE IT -->
-            <option value="">Loading positions...</option>
-            </select>
-        </div>
+
         
         <label style="font-size:0.9rem; margin-bottom:5px; display:block; color: var(--text-secondary);">Upload Resume (PDF/Doc)</label>
         <input type="file" name="resume_upload" id="resume_upload" accept=".pdf, .doc, .docx" required>
@@ -146,6 +142,62 @@
     <p>Our HR team will review your details and contact you if shortlisted.</p>
 </div>
 </div>
+    </section>
+
+    <!-- 6. DYNAMIC JOB DETAIL VIEW (HIDDEN BY DEFAULT) -->
+    <section id="job-detail-view" style="display: none; padding: 140px 0 80px 0; background: var(--bg-page);">
+        <div class="container" style="max-width: 1200px;">
+            <a href="." class="btn btn-secondary" style="margin-bottom: 30px;"><i class="fas fa-arrow-left"></i> Back to All Openings</a>
+            
+            <div class="job-detail-grid">
+                <!-- Left Column: Job Description -->
+                <div class="contact-card" style="padding: 40px; background: white; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin: 0;">
+                    <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px;">
+                        <span id="detail-job-type" class="btn btn-sm btn-primary" style="pointer-events: none; margin-bottom: 15px; background: #e8f5fe; color: #147db1; font-weight: 700; border: none; padding: 4px 10px; font-size: 11px; border-radius: 999px;">FULL TIME</span>
+                        <h2 id="detail-title" style="margin: 0 0 10px; font-size: 2.2rem; border: none; padding: 0; color: var(--brand-navy); font-weight: 800;">Job Title Here</h2>
+                        <p style="color: var(--text-secondary); margin: 0; font-size: 1.05rem;">
+                            <i class="fas fa-map-marker-alt"></i> <span id="detail-location">Location Here</span>
+                        </p>
+                    </div>
+                    
+                    <div id="detail-description-content" style="font-size: 1.05rem; line-height: 1.8; color: var(--text-primary);">
+                        <!-- Description will load dynamically -->
+                    </div>
+                </div>
+
+                <!-- Right Column: Job Application Form -->
+                <div class="contact-form contact-card" style="max-width: 100%; margin: 0; background: white; border-radius: 12px; border: 1px solid #cbd5e1; box-shadow: 0 4px 15px rgba(0,0,0,0.05); padding: 40px;">
+                    <h3>Apply for this Position</h3>
+                    <p style="margin-bottom: 25px; color: var(--text-secondary);">Submit your details and CV below, our HR team will review your application.</p>
+                    
+                    <form id="job-apply-form">
+                        <input type="hidden" name="position" id="apply-position-input">
+                        
+                        <input type="text" name="name" placeholder="Full Name" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 16px;">
+                        <input type="email" name="email" placeholder="Email Address" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 16px;">
+                        <input type="tel" name="phone" placeholder="Phone Number" required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 16px;">
+                        
+                        <label style="font-size:0.9rem; margin-bottom:5px; display:block; color: var(--text-secondary);">Upload Resume (PDF/Doc)</label>
+                        <input type="file" name="resume_upload" id="detail_resume_upload" accept=".pdf, .doc, .docx" required style="width: 100%; margin-bottom: 16px;">
+
+                        <textarea name="message" placeholder="Briefly tell us about your experience..." required style="width: 100%; padding: 12px; border-radius: 8px; border: 1px solid #cbd5e1; margin-bottom: 16px; height: 120px; resize: vertical;"></textarea>
+
+                        <div class="consent-group" style="margin-bottom:20px; display: flex; gap: 10px; align-items: flex-start;">
+                            <input type="checkbox" id="detail_consent" name="consent" checked required style="width:auto; margin-top: 5px;">
+                            <label for="detail_consent" style="font-size:0.9rem; color: var(--text-secondary);">I certify that the information provided is accurate.</label>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="detail-submit-btn" style="width:100%">Submit Application</button>
+                        <div id="detail-form-status" style="margin-top:10px;"></div>
+                    </form>
+
+                    <div id="detail-thank-you" class="hidden" style="display: none; text-align:center; margin-top:20px; padding: 20px; background: #f0fdf4; border-radius: 8px; color: #15803d;">
+                        <h3>Application Sent!</h3>
+                        <p>Our HR team will review your details and contact you if shortlisted.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
     </section>
 
     <!-- FOOTER (Same as Index) -->
