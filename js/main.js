@@ -268,7 +268,17 @@ function initFAQ() {
     faqQuestions.forEach(question => {
         question.addEventListener('click', () => {
             const item = question.parentElement;
-            item.classList.toggle('active');
+            const isActive = item.classList.contains('active');
+
+            // Close all FAQ items
+            document.querySelectorAll('.faq-item').forEach(el => {
+                el.classList.remove('active');
+            });
+
+            // If the clicked item was not active, open it
+            if (!isActive) {
+                item.classList.add('active');
+            }
         });
     });
 }

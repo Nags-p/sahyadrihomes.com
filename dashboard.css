@@ -426,16 +426,7 @@ button:disabled {
 }
 
 .blog-shell-eyebrow {
-    display: inline-block;
-    margin-bottom: 10px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.14);
-    color: #d9f8ff;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    display: none !important;
 }
 
 .blog-shell-header .btn-primary {
@@ -1033,16 +1024,7 @@ button:disabled {
 }
 
 .notes-shell-eyebrow {
-    display: inline-block;
-    margin-bottom: 10px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.14);
-    color: #e2ffe4;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    display: none !important;
 }
 
 .notes-shell-header .btn-primary {
@@ -1298,16 +1280,7 @@ button:disabled {
 }
 
 .admin-shell-eyebrow {
-    display: inline-block;
-    margin-bottom: 10px;
-    padding: 6px 10px;
-    border-radius: 999px;
-    background: rgba(255,255,255,0.14);
-    color: #f3f7ff;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+    display: none !important;
 }
 
 .admin-panel {
