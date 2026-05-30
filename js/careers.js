@@ -73,24 +73,15 @@ async function loadJobPostings() {
         allJobData.forEach(post => {
             const card = document.createElement('div');
             card.className = 'job-card';
-            
-            // --- NEW: Process description into a list ---
-            let descriptionHtml = '';
+
+            // Get the first line as a brief one-line description
+            let excerpt = '';
             if (post.description) {
-                const points = post.description.split('\n').filter(p => p.trim() !== '');
-                if (points.length > 1) {
-                    // If there are multiple lines, create a <ul> list
-                    descriptionHtml = '<ul class="job-description-list">';
-                    points.forEach(point => {
-                        descriptionHtml += `<li>${point}</li>`;
-                    });
-                    descriptionHtml += '</ul>';
-                } else {
-                    // If it's just one line, render it as a paragraph
-                    descriptionHtml = `<p>${post.description}</p>`;
+                const lines = post.description.split('\n').filter(p => p.trim() !== '');
+                if (lines.length > 0) {
+                    excerpt = `<p class="job-excerpt" style="margin-top: 10px; color: var(--text-secondary); font-size: 0.95rem;">${lines[0]}</p>`;
                 }
             }
-            // --- END of new code ---
 
             card.innerHTML = `
                 <div class="job-info">
@@ -99,7 +90,7 @@ async function loadJobPostings() {
                         <i class="fas fa-map-marker-alt"></i> ${post.location} &nbsp;|&nbsp; 
                         <i class="fas fa-clock"></i> ${post.job_type}
                     </p>
-                    ${descriptionHtml}
+                    ${excerpt}
                 </div>
                 <a href="?id=${post.id}" class="btn btn-secondary apply-now-btn">Apply Now</a>
             `;
