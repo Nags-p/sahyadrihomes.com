@@ -1,7 +1,6 @@
 // ===================================================================
 // --- 1. CONFIGURATION ---
 // ===================================================================
-const SCRIPT_URL = config.SCRIPT_URL; 
 const SUPABASE_URL = config.SUPABASE_URL;
 const SUPABASE_ANON_KEY = config.SUPABASE_ANON_KEY;
 
@@ -26,29 +25,148 @@ async function callEmailApi(action, payload, callback, errorElementId = 'campaig
     if (statusElement) statusElement.style.display = 'none';
 
     try {
-        const { data: { session } } = await _supabase.auth.getSession();
-        if (!session) {
+        const stored = sessionStorage.getItem('sahyadri_admin_user');
+        if (!stored) {
             alert("Session expired. Please log in again.");
             await logout(); return;
         }
 
-        payload.action = action;
-        payload.jwt = session.access_token;
+        const smtp = await getSmtpSettings();
+        if (!smtp || (!smtp.secure_token && !smtp.host)) {
+            throw new Error("SMTP relay is not configured. Please configure it in SMTP Settings first.");
+        }
 
-        const response = await fetch(SCRIPT_URL, {
-            method: 'POST',
-            mode: 'cors',
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(payload)
-        });
+        if (action === 'sendTest') {
+            const campaignData = payload.campaignData;
+            const recipient = campaignData.test_recipient;
+            if (!recipient) {
+                throw new Error("Test recipient email is missing.");
+            }
 
-        if (!response.ok) throw new Error(`Network response was not ok: ${response.statusText}`);
-        const data = await response.json();
-        callback(data);
+            const unsubscribeUrl = `https://nags-p.github.io/sahyadriconsanddev.web/unsubscribe/?email=${encodeURIComponent(recipient)}`;
+            const unsubscribeHtml = `<a href="${unsubscribeUrl}" style="color: #8D6E63; text-decoration: underline;">Unsubscribe</a>`;
+
+            const emailHtml = masterTemplateHtml
+                .replace(/{{headline}}/g, campaignData.headline)
+                .replace(/{{image_url}}/g, IMAGE_BASE_URL + campaignData.image_filename)
+                .replace(/{{body_text}}/g, campaignData.body_text.replace(/\n/g, '<br>'))
+                .replace(/{{cta_text}}/g, campaignData.cta_text)
+                .replace(/{{cta_link}}/g, WEBSITE_BASE_URL + campaignData.cta_path)
+                .replace(/{{unsubscribe_link_text}}/g, unsubscribeHtml);
+
+            const mailConfig = {
+                To: recipient,
+                From: `${smtp.from_name || 'Sahyadri Homes'} <${smtp.from_email || 'info@sahyadrihomes.com'}>`,
+                Subject: `[TEST] ${campaignData.subject}`,
+                Body: emailHtml
+            };
+
+            if (smtp.secure_token) {
+                mailConfig.SecureToken = smtp.secure_token;
+            } else {
+                mailConfig.Host = smtp.host;
+                mailConfig.Username = smtp.username;
+                mailConfig.Password = smtp.password;
+                mailConfig.Port = smtp.port;
+            }
+
+            const sendResult = await Email.send(mailConfig);
+            if (sendResult === "OK") {
+                callback({ success: true, message: `Test email successfully sent via SMTP to ${recipient}` });
+            } else {
+                throw new Error(sendResult);
+            }
+        } 
+        else if (action === 'runCampaign') {
+            const campaignData = payload.campaignData;
+            const segments = payload.segments;
+
+            let query = _supabase.from('clients').select('email, name, segment');
+            if (!segments.includes('All')) {
+                query = query.in('segment', segments);
+            }
+            query = query.neq('segment', 'Unsubscribed');
+
+            const { data: clients, error: fetchError } = await query;
+            if (fetchError) throw fetchError;
+            if (!clients || clients.length === 0) {
+                throw new Error("No clients found in the selected segment(s).");
+            }
+
+            const totalCount = clients.length;
+            let successCount = 0;
+            let failureCount = 0;
+            const sentEmails = [];
+
+            for (let i = 0; i < totalCount; i++) {
+                const client = clients[i];
+                const recipientEmail = client.email;
+                
+                showStatusMessage(statusElement, `Dispatching email ${i + 1} of ${totalCount} to ${recipientEmail}...`, true);
+
+                try {
+                    const unsubscribeUrl = `https://nags-p.github.io/sahyadriconsanddev.web/unsubscribe/?email=${encodeURIComponent(recipientEmail)}`;
+                    const unsubscribeHtml = `<a href="${unsubscribeUrl}" style="color: #8D6E63; text-decoration: underline;">Unsubscribe</a>`;
+
+                    const emailHtml = masterTemplateHtml
+                        .replace(/{{headline}}/g, campaignData.headline)
+                        .replace(/{{image_url}}/g, IMAGE_BASE_URL + campaignData.image_filename)
+                        .replace(/{{body_text}}/g, campaignData.body_text.replace(/\n/g, '<br>'))
+                        .replace(/{{cta_text}}/g, campaignData.cta_text)
+                        .replace(/{{cta_link}}/g, WEBSITE_BASE_URL + campaignData.cta_path)
+                        .replace(/{{unsubscribe_link_text}}/g, unsubscribeHtml);
+
+                    const mailConfig = {
+                        To: recipientEmail,
+                        From: `${smtp.from_name || 'Sahyadri Homes'} <${smtp.from_email || 'info@sahyadrihomes.com'}>`,
+                        Subject: campaignData.subject,
+                        Body: emailHtml
+                    };
+
+                    if (smtp.secure_token) {
+                        mailConfig.SecureToken = smtp.secure_token;
+                    } else {
+                        mailConfig.Host = smtp.host;
+                        mailConfig.Username = smtp.username;
+                        mailConfig.Password = smtp.password;
+                        mailConfig.Port = smtp.port;
+                    }
+
+                    const sendResult = await Email.send(mailConfig);
+                    if (sendResult === "OK") {
+                        successCount++;
+                        sentEmails.push(recipientEmail);
+                    } else {
+                        console.warn(`Failed for ${recipientEmail}: ${sendResult}`);
+                        failureCount++;
+                    }
+                } catch (err) {
+                    console.error(`Error sending to ${recipientEmail}:`, err);
+                    failureCount++;
+                }
+
+                await new Promise(r => setTimeout(r, 200));
+            }
+
+            const archiveTemplate = masterTemplateHtml
+                .replace(/{{headline}}/g, campaignData.headline)
+                .replace(/{{image_url}}/g, IMAGE_BASE_URL + campaignData.image_filename)
+                .replace(/{{body_text}}/g, campaignData.body_text.replace(/\n/g, '<br>'))
+                .replace(/{{cta_text}}/g, campaignData.cta_text)
+                .replace(/{{cta_link}}/g, WEBSITE_BASE_URL + campaignData.cta_path)
+                .replace(/{{unsubscribe_link_text}}/g, 'Unsubscribe');
+
+            callback({
+                success: true,
+                message: `Campaign completed. ${successCount} emails sent successfully. ${failureCount} failed.`,
+                recipients: sentEmails,
+                templateHtml: archiveTemplate
+            });
+        }
     } catch (error) {
         setLoading(false);
-        const errorMsg = `Email API Error: ${error.message}`;
-        showStatusMessage(document.getElementById(errorElementId), errorMsg, false);
+        const errorMsg = `SMTP Dispatch Error: ${error.message}`;
+        showStatusMessage(statusElement, errorMsg, false);
         callback({ success: false, message: errorMsg });
     }
 }
@@ -95,6 +213,7 @@ function showPage(pageId, dom, params = null) {
         fetchBlogPosts(dom);
         fetchBlogAssets();
     }
+    if (pageId === 'page-settings') loadSmtpSettings();
 
     // --- CONSOLIDATED TAB LOGIC ---
 
@@ -226,6 +345,173 @@ async function loadDashboardData() {
         console.error("Error loading dashboard data:", error);
         document.getElementById('recent-inquiries-list').innerHTML = '<li>Error loading data.</li>';
         document.getElementById('recent-apps-list').innerHTML = '<li>Error loading data.</li>';
+    }
+}
+
+// ===================================================================
+// --- SMTP SETTINGS MANAGEMENT LOGIC ---
+// ===================================================================
+const LOCAL_SMTP_KEY = 'sahyadri_smtp_settings';
+
+async function getSmtpSettings() {
+    try {
+        const { data, error } = await _supabase.from('smtp_settings').select('*').limit(1).maybeSingle();
+        if (error) throw error;
+        if (data) return data;
+    } catch (e) {
+        console.warn("Supabase smtp_settings query failed (checking localStorage fallback):", e.message);
+    }
+    
+    // Fallback to LocalStorage
+    try {
+        const raw = localStorage.getItem(LOCAL_SMTP_KEY);
+        if (raw) return JSON.parse(raw);
+    } catch (e) {
+        console.error("LocalStorage read failed:", e);
+    }
+    
+    return null;
+}
+
+async function loadSmtpSettings() {
+    setLoading(true);
+    const statusEl = document.getElementById('smtp-settings-status');
+    if (statusEl) statusEl.style.display = 'none';
+
+    try {
+        const settings = await getSmtpSettings();
+        if (settings) {
+            document.getElementById('smtp-host').value = settings.host || '';
+            document.getElementById('smtp-port').value = settings.port || '';
+            document.getElementById('smtp-auth').value = settings.auth || 'TLS';
+            document.getElementById('smtp-username').value = settings.username || '';
+            document.getElementById('smtp-password').value = settings.password || '';
+            document.getElementById('smtp-token').value = settings.secure_token || '';
+            document.getElementById('smtp-from-name').value = settings.from_name || '';
+            document.getElementById('smtp-from-email').value = settings.from_email || '';
+        }
+    } catch (err) {
+        console.error("Error loading SMTP settings:", err);
+    }
+    setLoading(false);
+}
+
+async function saveSmtpSettings(e) {
+    if (e) e.preventDefault();
+    setLoading(true);
+    const statusEl = document.getElementById('smtp-settings-status');
+    
+    const settings = {
+        host: document.getElementById('smtp-host').value.trim(),
+        port: parseInt(document.getElementById('smtp-port').value, 10),
+        auth: document.getElementById('smtp-auth').value,
+        username: document.getElementById('smtp-username').value.trim(),
+        password: document.getElementById('smtp-password').value,
+        secure_token: document.getElementById('smtp-token').value.trim(),
+        from_name: document.getElementById('smtp-from-name').value.trim(),
+        from_email: document.getElementById('smtp-from-email').value.trim()
+    };
+
+    let dbSaved = false;
+    let dbErrorMsg = '';
+
+    try {
+        const { data: existing, error: findError } = await _supabase.from('smtp_settings').select('id').limit(1).maybeSingle();
+        
+        let result;
+        if (existing && existing.id) {
+            result = await _supabase.from('smtp_settings').update(settings).eq('id', existing.id);
+        } else {
+            result = await _supabase.from('smtp_settings').insert([settings]);
+        }
+
+        if (result.error) throw result.error;
+        dbSaved = true;
+    } catch (err) {
+        dbErrorMsg = err.message;
+        console.warn("Failed saving SMTP settings to Supabase, falling back to LocalStorage:", dbErrorMsg);
+    }
+
+    try {
+        localStorage.setItem(LOCAL_SMTP_KEY, JSON.stringify(settings));
+        if (dbSaved) {
+            showStatusMessage(statusEl, "SMTP settings successfully saved to Database & Local Cache!", true);
+        } else {
+            showStatusMessage(statusEl, `Saved to local browser storage only. (DB Error: ${dbErrorMsg})`, true);
+        }
+    } catch (err) {
+        showStatusMessage(statusEl, `Failed to save settings: ${err.message}`, false);
+    }
+    setLoading(false);
+}
+
+async function handleSmtpDiagnosticTest(e) {
+    if (e) e.preventDefault();
+    setLoading(true);
+    const statusEl = document.getElementById('smtp-test-status');
+    if (statusEl) statusEl.style.display = 'none';
+
+    const testRecipient = document.getElementById('smtp-test-recipient').value.trim();
+    const testSubject = document.getElementById('smtp-test-subject').value.trim();
+    const testMessage = document.getElementById('smtp-test-message').value.trim();
+
+    const host = document.getElementById('smtp-host').value.trim();
+    const port = parseInt(document.getElementById('smtp-port').value, 10);
+    const username = document.getElementById('smtp-username').value.trim();
+    const password = document.getElementById('smtp-password').value;
+    const token = document.getElementById('smtp-token').value.trim();
+    const fromName = document.getElementById('smtp-from-name').value.trim();
+    const fromEmail = document.getElementById('smtp-from-email').value.trim();
+
+    if (!testRecipient) {
+        showStatusMessage(statusEl, "Recipient email is required.", false);
+        setLoading(false);
+        return;
+    }
+
+    try {
+        showStatusMessage(statusEl, "Initiating diagnostic SMTP handshake...", true);
+        
+        const mailConfig = {
+            To: testRecipient,
+            From: `${fromName} <${fromEmail}>`,
+            Subject: testSubject,
+            Body: testMessage.replace(/\n/g, '<br>')
+        };
+
+        if (token) {
+            mailConfig.SecureToken = token;
+        } else {
+            mailConfig.Host = host;
+            mailConfig.Username = username;
+            mailConfig.Password = password;
+            mailConfig.Port = port;
+        }
+
+        const messageResult = await Email.send(mailConfig);
+
+        if (messageResult === "OK") {
+            showStatusMessage(statusEl, `Handshake successful! Test email successfully sent via SMTP to ${testRecipient}`, true);
+        } else {
+            throw new Error(messageResult);
+        }
+    } catch (err) {
+        console.error("SMTP Test Error:", err);
+        showStatusMessage(statusEl, `Connection Diagnostics Failed: ${err.message}`, false);
+    }
+    setLoading(false);
+}
+
+function initSmtpPasswordToggle() {
+    const toggleIcon = document.getElementById('toggle-smtp-password');
+    const passwordInput = document.getElementById('smtp-password');
+    if (toggleIcon && passwordInput) {
+        toggleIcon.addEventListener('click', () => {
+            const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
+            passwordInput.setAttribute('type', type);
+            toggleIcon.classList.toggle('fa-eye');
+            toggleIcon.classList.toggle('fa-eye-slash');
+        });
     }
 }
 
@@ -2539,59 +2825,67 @@ async function initializeDashboard() {
     // Replace the entire handleUserSession function in /dashboard.js
 
 async function handleUserSession() {
-    const { data: { session } } = await _supabase.auth.getSession();
+    const stored = sessionStorage.getItem('sahyadri_admin_user');
 
-    if (session) {
-        // --- NEW SECURITY CHECK ---
-        const userRole = session.user.app_metadata?.role;
-        const allowedRoles = ['Super Admin', 'Admin', 'Editor'];
-
-        // If the user's role is NOT in the allowed list, log them out and redirect.
-        if (!allowedRoles.includes(userRole)) {
-            console.warn(`Access Denied: User with role '${userRole || 'None'}' attempted to access the Main Admin Panel.`);
-            await _supabase.auth.signOut();
-            // Redirect to the main website's homepage, not the login form,
-            // as they are not an authorized admin.
-            window.location.href = '../';
-            return; // Stop further execution
+    if (stored) {
+        try {
+            const user = JSON.parse(stored);
+            document.body.className = `is-${user.role.toLowerCase().replace(' ', '-')}`;
+            dom.userEmailDisplay.textContent = user.display_name;
+            dom.userRoleDisplay.textContent = user.role;
+            initializeDashboard();
+        } catch (e) {
+            console.error("Failed to parse local session:", e);
+            sessionStorage.removeItem('sahyadri_admin_user');
+            window.location.reload();
         }
-        // --- END OF SECURITY CHECK ---
-
-        // If the security check passes, proceed with initializing the dashboard.
-        document.body.className = `is-${userRole.toLowerCase().replace(' ', '-')}`;
-        dom.userEmailDisplay.textContent = session.user.user_metadata.display_name || session.user.email;
-        dom.userRoleDisplay.textContent = userRole;
-        initializeDashboard();
-
     } else {
-        // If there is no session at all, show the login overlay.
         dom.loginOverlay.style.display = 'flex';
         dom.dashboardLayout.style.display = 'none';
     }
 }
 
-    
-    
-    async function logout() {
-        setLoading(true);
-        await _supabase.auth.signOut();
-        window.location.reload();
+async function logout() {
+    setLoading(true);
+    sessionStorage.removeItem('sahyadri_admin_user');
+    window.location.reload();
+}
+
+dom.loginForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const username = document.getElementById('username-select').value;
+    const password = document.getElementById('password').value;
+
+    const validPasswords = config.USER_PASSWORDS || {
+        'developer': '425388',
+        'pavan': 'pavan123',
+        'priya': 'priya123'
+    };
+
+    const targetPassword = validPasswords[username];
+
+    if (!targetPassword) {
+        showStatusMessage(dom.loginStatus, "Please select a valid username.", false);
+        return;
     }
-    
-    dom.loginForm.addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const email = document.getElementById('email').value;
-        const password = document.getElementById('password').value;
+
+    if (password === targetPassword) {
         setLoading(true);
         dom.campaignLoader.textContent = 'Logging in...';
-        const { error } = await _supabase.auth.signInWithPassword({ email, password });
+        
+        const mockSession = {
+            username: username,
+            role: username === 'developer' ? 'Super Admin' : 'Admin',
+            display_name: username.charAt(0).toUpperCase() + username.slice(1)
+        };
+        
+        sessionStorage.setItem('sahyadri_admin_user', JSON.stringify(mockSession));
         setLoading(false);
-        if (error) {
-            showStatusMessage(dom.loginStatus, error.message, false);
-        } else {
-            handleUserSession();
-        }
-    });
+        handleUserSession();
+    } else {
+        showStatusMessage(dom.loginStatus, "Invalid password. Please try again.", false);
+    }
+});
 
     dom.logoutBtn.addEventListener('click', logout);
     
@@ -2796,7 +3090,11 @@ imageUploadInput.addEventListener('change', (e) => {
     document.getElementById('btn-send-test').addEventListener('click', () => {
         const campaignForm = document.getElementById('campaign-form');
         if (!campaignForm.checkValidity()) { campaignForm.reportValidity(); return; }
-        callEmailApi('sendTest', { campaignData: getCampaignData() }, r => {
+        const recipient = window.prompt("Enter recipient email address for the test campaign:");
+        if (!recipient) return;
+        const cData = getCampaignData();
+        cData.test_recipient = recipient;
+        callEmailApi('sendTest', { campaignData: cData }, r => {
             showStatusMessage(dom.campaignStatus, r.message, r.success);
             setLoading(false);
         });
@@ -2822,8 +3120,11 @@ imageUploadInput.addEventListener('change', (e) => {
 
             callEmailApi('runCampaign', { campaignData: campaignData, segments: segs }, async (r) => {
                 if (r.success) {
-                    const emailCount = (r.message.match(/\d+/) || [0])[0];
-                    await _supabase.from('campaign_archive').update({ emails_sent: parseInt(emailCount, 10) }).eq('id', campaignRecord.id);
+                    await _supabase.from('campaign_archive').update({ 
+                        emails_sent: r.recipients.length,
+                        template_html: r.templateHtml,
+                        recipients: r.recipients
+                    }).eq('id', campaignRecord.id);
                     showStatusMessage(dom.campaignStatus, r.message, r.success);
                 } else {
                     showStatusMessage(dom.campaignStatus, r.message, r.success);
@@ -3132,6 +3433,17 @@ if (notesSearchInput) {
 
 
     
+    // --- SMTP Settings Listeners ---
+    const smtpSettingsForm = document.getElementById('smtp-settings-form');
+    if (smtpSettingsForm) {
+        smtpSettingsForm.addEventListener('submit', saveSmtpSettings);
+    }
+    const smtpTestForm = document.getElementById('smtp-test-form');
+    if (smtpTestForm) {
+        smtpTestForm.addEventListener('submit', handleSmtpDiagnosticTest);
+    }
+    initSmtpPasswordToggle();
+
     handleUserSession();
 });
 

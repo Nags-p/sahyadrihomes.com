@@ -6,7 +6,14 @@
 // For best practice, add 'config.js' to your .gitignore file.
 
 const config = {
-    SCRIPT_URL: 'https://script.google.com/macros/s/AKfycbwnR0cbDa0oNp_T9BPBXyB-stCzH2zGogbMisdcDigtPl9HOrqoL06W7Oxn_rwlTlkgvA/exec',
     SUPABASE_URL: 'https://qrnmnulzajmxrsrzgmlp.supabase.co',
-    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFybm1udWx6YWpteHJzcnpnbWxwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzOTg0NTEsImV4cCI6MjA3ODk3NDQ1MX0.BLlRbin09uEFtwsJNTAr8h-JSy1QofEKbW-F2ns-yio'
+    SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFybm1udWx6YWpteHJzcnpnbWxwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzOTg0NTEsImV4cCI6MjA3ODk3NDQ1MX0.BLlRbin09uEFtwsJNTAr8h-JSy1QofEKbW-F2ns-yio',
+    
+    // --- USER LOGIN PASSWORDS ---
+    // Change these values to set custom passwords for Pavan and Priya.
+    USER_PASSWORDS: {
+        'developer': '425388',
+        'pavan': 'pavan123',
+        'priya': 'priya123'
+    }
 };

@@ -16,8 +16,13 @@
         <div class="content-box" style="max-width: 450px; width: 100%;">
             <h1>Admin Login</h1>
             <form id="login-form">
-                <label for="email"><i class="fas fa-envelope"></i> Email</label>
-                <input type="email" id="email" required autocomplete="email">
+                <label for="username-select"><i class="fas fa-user"></i> Username</label>
+                <select id="username-select" style="width: 100%; margin-bottom: 15px; padding: 10px; border-radius: 6px; border: 1px solid var(--border-color); background: rgba(255,255,255,0.9); font-size: 1rem;" required>
+                    <option value="" disabled selected>Select user...</option>
+                    <option value="pavan">Pavan</option>
+                    <option value="priya">Priya</option>
+                    <option value="developer">Developer</option>
+                </select>
                 <label for="password"><i class="fas fa-lock"></i> Password</label>
                 <input type="password" id="password" required autocomplete="current-password">
                 <div class="button-group" style="margin-top:20px;">
@@ -52,6 +57,7 @@
                     <li id="nav-blog" data-page="page-blog"><i class="fas fa-newspaper"></i> Blog / Insights</li>
                     <li id="nav-careers" data-page="page-careers"><i class="fas fa-briefcase"></i> Careers <span id="sidebar-career-badge" class="sidebar-badge"></span></li>
                     <li id="nav-notes" data-page="page-notes"><i class="fas fa-sticky-note"></i> Notes</li>
+                    <li id="nav-settings" data-page="page-settings"><i class="fas fa-cog"></i> SMTP Settings</li>
                 </ul>
             </nav>
             <div class="sidebar-footer">
@@ -752,6 +758,100 @@
     </div>
 </div>
 
+<!-- SMTP SETTINGS PAGE -->
+<div id="page-settings" class="page">
+    <div class="content-box">
+        <div class="admin-shell admin-shell-settings">
+            <div class="admin-shell-header">
+                <div class="admin-shell-title">
+                    <span class="admin-shell-eyebrow">System Control</span>
+                    <h2>SMTP Mailer Settings</h2>
+                    <p>Configure custom SMTP server details or secure tokens to run campaigns and send system emails directly from your browser.</p>
+                </div>
+            </div>
+
+            <div class="admin-panel-grid admin-panel-grid-2">
+                <div class="admin-panel">
+                    <div class="admin-panel-heading">
+                        <div>
+                            <h3>SMTP Configuration</h3>
+                            <p>All credentials will be saved in Supabase or securely in your browser's local storage.</p>
+                        </div>
+                    </div>
+                    <form id="smtp-settings-form">
+                        <label for="smtp-host"><i class="fas fa-server"></i> SMTP Host</label>
+                        <input type="text" id="smtp-host" placeholder="e.g. smtp.brevo.com" required>
+
+                        <div style="display: flex; gap: 15px; width: 100%;">
+                            <div style="flex: 1;">
+                                <label for="smtp-port"><i class="fas fa-door-open"></i> Port</label>
+                                <input type="number" id="smtp-port" placeholder="e.g. 587" required>
+                            </div>
+                            <div style="flex: 1;">
+                                <label for="smtp-auth"><i class="fas fa-shield-alt"></i> Authentication</label>
+                                <select id="smtp-auth" style="width: 100%;">
+                                    <option value="SSL">SSL (465)</option>
+                                    <option value="TLS" selected>TLS (587/25)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <label for="smtp-username"><i class="fas fa-user"></i> SMTP Username / Email</label>
+                        <input type="email" id="smtp-username" placeholder="e.g. info@sahyadrihomes.com" required autocomplete="username">
+
+                        <label for="smtp-password"><i class="fas fa-lock"></i> SMTP Password / App Key</label>
+                        <div style="position: relative; display: flex; align-items: center;">
+                            <input type="password" id="smtp-password" placeholder="SMTP server password" required autocomplete="current-password" style="width: 100%; padding-right: 40px;">
+                            <i class="fas fa-eye" id="toggle-smtp-password" style="position: absolute; right: 15px; cursor: pointer; color: var(--text-light);"></i>
+                        </div>
+
+                        <div style="margin: 15px 0; border-top: 1px solid var(--border-color); padding-top: 15px;">
+                            <label for="smtp-token" style="font-weight: 600;"><i class="fas fa-key"></i> SMTP.js Secure Token (Optional)</label>
+                            <input type="text" id="smtp-token" placeholder="If using a pre-generated SMTP.js token">
+                            <small style="color: var(--text-light); display: block; margin-top: 5px;">Using a Secure Token encrypts your password and prevents displaying it in browser memory.</small>
+                        </div>
+
+                        <label for="smtp-from-name"><i class="fas fa-id-card"></i> Sender Display Name</label>
+                        <input type="text" id="smtp-from-name" placeholder="e.g. Sahyadri Homes" required>
+
+                        <label for="smtp-from-email"><i class="fas fa-envelope"></i> Sender Email Address</label>
+                        <input type="email" id="smtp-from-email" placeholder="e.g. info@sahyadrihomes.com" required>
+
+                        <div class="button-group" style="margin-top: 25px;">
+                            <button type="submit" class="btn-primary"><i class="fas fa-save"></i> Save Settings</button>
+                        </div>
+                        <div id="smtp-settings-status" class="status-message"></div>
+                    </form>
+                </div>
+
+                <div class="admin-panel">
+                    <div class="admin-panel-heading">
+                        <div>
+                            <h3>SMTP Test Console</h3>
+                            <p>Verify your SMTP configuration instantly by sending a rapid test email.</p>
+                        </div>
+                    </div>
+                    <form id="smtp-test-form">
+                        <label for="smtp-test-recipient"><i class="fas fa-paper-plane"></i> Test Recipient Email</label>
+                        <input type="email" id="smtp-test-recipient" placeholder="e.g. yourname@example.com" required>
+
+                        <label for="smtp-test-subject"><i class="fas fa-heading"></i> Subject</label>
+                        <input type="text" id="smtp-test-subject" value="Sahyadri Homes SMTP Verification" required>
+
+                        <label for="smtp-test-message"><i class="fas fa-align-left"></i> Test Message</label>
+                        <textarea id="smtp-test-message" rows="4" required>This is a quick diagnostic message confirming that the Sahyadri Homes Admin Panel has been successfully configured to use your direct SMTP relay system. Congratulations!</textarea>
+
+                        <div class="button-group" style="margin-top: 25px;">
+                            <button type="submit" class="btn-secondary"><i class="fas fa-diagnoses"></i> Send Test Connection Email</button>
+                        </div>
+                        <div id="smtp-test-status" class="status-message"></div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
     <!-- 3. Update the Modal -->
 <!-- Replace your entire #edit-client-modal-overlay div with this: -->
 <div id="edit-client-modal-overlay" class="modal-overlay">
@@ -909,6 +1009,7 @@
 </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://smtpjs.com/v3/smtp.js"></script>
     <script src="../js/config.js" defer></script>
     <script src="../js/dashboard.js" defer></script>
 

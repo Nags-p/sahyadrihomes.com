@@ -48,59 +48,47 @@
     </div>
 
 </div>
-<script>
-    // --- PASTE YOUR GOOGLE APPS SCRIPT URL HERE ---
-    const scriptUrl = 'https://script.google.com/macros/s/AKfycbztocQ8b1iBQRTsSF1_ERZnMbTY84sNGtv3VHweclBhObBTmVTUbAKRTvRwxlekyZOT/exec';
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        const SUPABASE_URL = 'https://qrnmnulzajmxrsrzgmlp.supabase.co';
+        const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFybm1udWx6YWpteHJzcnpnbWxwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjMzOTg0NTEsImV4cCI6MjA3ODk3NDQ1MX0.BLlRbin09uEFtwsJNTAr8h-JSy1QofEKbW-F2ns-yio';
+        
+        const _supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-    const loadingDiv = document.getElementById('loading-message');
-    const successDiv = document.getElementById('success-message');
-    const errorDiv = document.getElementById('error-message');
+        const loadingDiv = document.getElementById('loading-message');
+        const successDiv = document.getElementById('success-message');
+        const errorDiv = document.getElementById('error-message');
 
-    // This is the function that the Google Script will call by name from its response.
-    // The 'data' parameter will be the JSON object { success: true/false, message: '...' }
-    function handleResponse(data) {
-        loadingDiv.style.display = 'none'; // Hide loading spinner
-
-        if (data.success) {
+        window.onload = async function() {
             const params = new URLSearchParams(window.location.search);
             const email = params.get('email');
-            document.getElementById('unsubscribed-email').textContent = email || 'Your email';
-            successDiv.style.display = 'block';
-        } else {
-            document.getElementById('error-details').textContent = `Details: ${data.message}`;
-            errorDiv.style.display = 'block';
-        }
-    }
 
-    // This code runs automatically when the page loads
-    window.onload = function() {
-        const params = new URLSearchParams(window.location.search);
-        const email = params.get('email');
+            if (!email) {
+                loadingDiv.style.display = 'none';
+                errorDiv.style.display = 'block';
+                document.getElementById('error-details').textContent = 'Error: No email address was provided in the link.';
+                return;
+            }
 
-        if (!email) {
-            loadingDiv.style.display = 'none';
-            errorDiv.style.display = 'block';
-            document.getElementById('error-details').textContent = 'Error: No email address was provided in the link.';
-            return;
-        }
+            try {
+                // Update client's segment to 'Unsubscribed' in Supabase
+                const { data, error } = await _supabase
+                    .from('clients')
+                    .update({ segment: 'Unsubscribed' })
+                    .eq('email', email);
 
-        // --- THE FIX (JSONP method) ---
-        // Dynamically create a <script> tag. This is how you make a JSONP request.
-        const scriptTag = document.createElement('script');
-        // The URL includes the callback parameter, which tells Google Scripts to wrap the response in our 'handleResponse' function.
-        scriptTag.src = `${scriptUrl}?email=${encodeURIComponent(email)}&callback=handleResponse`;
+                if (error) throw error;
 
-        // Handle cases where the script fails to load (e.g., network error, Google server down)
-        scriptTag.onerror = function() {
-            loadingDiv.style.display = 'none';
-            errorDiv.style.display = 'block';
-            document.getElementById('error-details').textContent = 'A network error occurred. Please check your connection and try again.';
+                loadingDiv.style.display = 'none';
+                document.getElementById('unsubscribed-email').textContent = email;
+                successDiv.style.display = 'block';
+            } catch (err) {
+                loadingDiv.style.display = 'none';
+                document.getElementById('error-details').textContent = `Details: ${err.message}`;
+                errorDiv.style.display = 'block';
+            }
         };
-
-        // Append the script tag to the document to trigger the request.
-        document.body.appendChild(scriptTag);
-    };
-</script>
+    </script>
 
 </body>
 </html>
